@@ -57,6 +57,10 @@ namespace Mapping_Tools {
                 AppCommon = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
                 AppDataPath = Path.Combine(AppCommon, "Mapping Tools");
                 ExportPath = Path.Combine(AppDataPath, "Exports");
+
+                // Give the portable core its Windows services. Do this before anything
+                // else uses the core, or the core will use the do-nothing defaults.
+                Platform.WpfPlatformServices.Register();
                 HttpClient = new HttpClient();
                 HttpClient.DefaultRequestHeaders.Add("user-agent", "Mapping Tools");
 
@@ -324,7 +328,7 @@ namespace Mapping_Tools {
                         await Task.Run(() => BackupManager.LoadMapBackup(backupPaths[0], paths[0], false));
                     } catch (BeatmapIncompatibleException ex) {
                         var exResult = ex.Show();
-                        if (exResult == MessageBoxResult.Cancel) {
+                        if (!exResult) {
                             return;
                         }
 

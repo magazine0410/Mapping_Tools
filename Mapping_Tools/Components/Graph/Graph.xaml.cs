@@ -1,4 +1,5 @@
-﻿using Mapping_Tools.Annotations;
+﻿using Mapping_Tools.Classes.ToolHelpers;
+using Mapping_Tools.Annotations;
 using Mapping_Tools.Classes.MathUtil;
 using Mapping_Tools.Components.Graph.Interpolation;
 using Mapping_Tools.Components.Graph.Interpolation.Interpolators;

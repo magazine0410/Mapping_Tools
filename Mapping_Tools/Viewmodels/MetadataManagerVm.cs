@@ -97,7 +97,7 @@ namespace Mapping_Tools.Viewmodels {
                 if (ComboColours.Count >= 8) return;
                 ComboColours.Add(ComboColours.Count > 0
                     ? new ComboColour(ComboColours[ComboColours.Count - 1].Color)
-                    : new ComboColour(Colors.White));
+                    : new ComboColour(System.Drawing.Color.White));
             });
 
             RemoveCommand = new CommandImplementation(_ => {
@@ -109,7 +109,7 @@ namespace Mapping_Tools.Viewmodels {
             AddSpecialCommand = new CommandImplementation(_ => {
                 SpecialColours.Add(SpecialColours.Count > 0
                     ? new SpecialColour(SpecialColours[SpecialColours.Count - 1].Color)
-                    : new SpecialColour(Colors.White));
+                    : new SpecialColour(System.Drawing.Color.White));
             });
 
             RemoveSpecialCommand = new CommandImplementation(_ => {

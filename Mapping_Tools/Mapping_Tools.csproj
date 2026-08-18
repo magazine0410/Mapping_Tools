@@ -54,6 +54,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Mapping_Tools.Core\Mapping_Tools.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="..\lib\EditorReader.dll">
       <Private>true</Private>
     </Reference>

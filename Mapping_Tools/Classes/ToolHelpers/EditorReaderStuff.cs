@@ -393,7 +393,7 @@ namespace Mapping_Tools.Classes.ToolHelpers {
         {
             beatmap.SetBookmarks(reader.bookmarks.Select<int, double>(o => o).ToList());
 
-            beatmap.BeatmapTiming.SetTimingPoints(reader.controlPoints.Select(o => (TimingPoint)o).ToList());
+            beatmap.BeatmapTiming.SetTimingPoints(reader.controlPoints.Select(o => o.ToTimingPoint()).ToList());
 
             List<HitObject> selected = new List<HitObject>();
             beatmap.HitObjects = reader.hitObjects.Select(o => {

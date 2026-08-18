@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Mapping_Tools</RootNamespace>
+    <AssemblyName>Mapping_Tools.Core</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Platforms>AnyCPU;x86;x64</Platforms>
+    <!-- Portable core: no Windows target platform. Do not add UseWPF or
+         UseWindowsForms here, and do not reference the NAudio metapackage
+         (it drags in NAudio.WinForms -> Microsoft.WindowsDesktop.App). -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio.Core" Version="2.0.0" />
+    <PackageReference Include="NAudio.Midi" Version="2.0.0" />
+    <PackageReference Include="NAudio.Vorbis" Version="1.3.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="NVorbis" Version="0.10.3" />
+    <PackageReference Include="OggVorbisEncoder" Version="1.2.0" />
+    <PackageReference Include="NLayer" Version="1.16.0" />
+  </ItemGroup>
+
+</Project>
