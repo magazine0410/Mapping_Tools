@@ -108,7 +108,7 @@ namespace Mapping_Tools {
         private async Task Update(bool allowSkip = true, bool notifyUser = false) {
             try {
                 var assetNamePattern = Environment.Is64BitProcess ? "release_x64.zip" : "release.zip";
-                updateManager = new UpdateManager("OliBomby", "Mapping_Tools", assetNamePattern);
+                updateManager = new UpdateManager("magazine0410", "Mapping_Tools", assetNamePattern);
                 var hasUpdate = await updateManager.FetchUpdateAsync();
 
                 if (!hasUpdate) {
@@ -380,7 +380,7 @@ namespace Mapping_Tools {
 
         //Open project in browser
         private void OpenGitHub(object sender, RoutedEventArgs e) {
-            System.Diagnostics.Process.Start("explorer.exe", "https://github.com/OliBomby/Mapping_Tools");
+            System.Diagnostics.Process.Start("explorer.exe", "https://github.com/magazine0410/Mapping_Tools");
         }
 
         //Open project in browser
