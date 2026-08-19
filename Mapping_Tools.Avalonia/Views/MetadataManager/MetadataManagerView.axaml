@@ -1,0 +1,119 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.MetadataManager.MetadataManagerView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:TimeToStringConverter x:Key="TimeConverter"/>
+        <domain:ColorToBrushConverter x:Key="ColorBrushConverter"/>
+        <domain:DrawingColorToUiColorConverter x:Key="DrawingColorConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+        <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+        <ScrollViewer Grid.Row="1" Margin="0,14,0,0">
+            <StackPanel MaxWidth="850" HorizontalAlignment="Left">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <TextBox Text="{Binding ImportPath}" PlaceholderText="Import metadata from (optional)"/>
+                    <Button Grid.Column="1" Command="{Binding ImportBrowseCommand}" Theme="{StaticResource IconButton}">
+                        <icons:MaterialIcon Kind="Folder" Width="24" Height="24"/>
+                    </Button>
+                    <Button Grid.Column="2" Content="Import" Command="{Binding ImportCommand}"/>
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,10,0,0">
+                    <TextBox Text="{Binding ExportPath}" PlaceholderText="Export to beatmap paths separated by |"/>
+                    <Button Grid.Column="1" Command="{Binding ExportBrowseCommand}" Theme="{StaticResource IconButton}">
+                        <icons:MaterialIcon Kind="FolderMultiple" Width="24" Height="24"/>
+                    </Button>
+                </Grid>
+
+                <Grid ColumnDefinitions="160,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                      RowSpacing="8" ColumnSpacing="12" Margin="0,18,0,0">
+                    <TextBlock Text="Artist" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Row="1" Text="Romanised artist" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Row="2" Text="Title" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Row="3" Text="Romanised title" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Row="4" Text="Beatmap creator" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Row="5" Text="Source" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Row="6" Text="Tags" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBlock Grid.Row="7" Text="Preview time" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                    <TextBox Grid.Column="1" Text="{Binding Artist}"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding RomanisedArtist}"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Title}"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding RomanisedTitle}"/>
+                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding BeatmapCreator}"/>
+                    <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Source}"/>
+                    <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Tags}" TextWrapping="Wrap"/>
+                    <c:ValidatedTextBox Grid.Row="7" Grid.Column="1" Value="{Binding PreviewTime}"
+                                        Converter="{StaticResource TimeConverter}"/>
+                </Grid>
+                <TextBlock Foreground="Red" Margin="172,6,0,0"
+                           IsVisible="{Binding HasBeatmapFileNameOverflowError}"
+                           Text="The generated beatmap filename exceeds 255 characters."/>
+                <TextBlock Foreground="Red" Margin="172,6,0,0"
+                           IsVisible="{Binding HasTagsOverflowError}"
+                           Text="Tags may contain at most 100 words and 1024 characters."/>
+                <StackPanel Orientation="Horizontal" Margin="172,10,0,0">
+                    <CheckBox Content="Remove duplicate tags" IsChecked="{Binding DoRemoveDuplicateTags}"/>
+                    <CheckBox Margin="18,0,0,0" Content="Reset beatmap IDs" IsChecked="{Binding ResetIds}"/>
+                    <CheckBox Margin="18,0,0,0" Content="Export colours" IsChecked="{Binding UseComboColours}"/>
+                </StackPanel>
+
+                <TextBlock Text="Combo colours" FontSize="18" FontWeight="SemiBold" Margin="0,20,0,8"/>
+                <StackPanel Orientation="Horizontal">
+                    <ItemsControl ItemsSource="{Binding ComboColours}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <c:PopupBox StaysOpen="True" Margin="2">
+                                    <c:PopupBox.ToggleContent>
+                                        <Border Width="34" Height="34" CornerRadius="17"
+                                                Background="{Binding Color, Converter={StaticResource ColorBrushConverter}}"/>
+                                    </c:PopupBox.ToggleContent>
+                                    <ColorPicker Margin="10" Color="{Binding Color, Converter={StaticResource DrawingColorConverter}, Mode=TwoWay}"/>
+                                </c:PopupBox>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Margin="8,0" Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding AddCommand}">
+                        <icons:MaterialIcon Kind="Plus" Width="22" Height="22"/>
+                    </Button>
+                    <Button Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding RemoveCommand}">
+                        <icons:MaterialIcon Kind="Minus" Width="22" Height="22"/>
+                    </Button>
+                </StackPanel>
+
+                <TextBlock Text="Special colours" FontSize="18" FontWeight="SemiBold" Margin="0,18,0,8"/>
+                <ItemsControl ItemsSource="{Binding SpecialColours}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="240,Auto" Margin="0,0,0,6">
+                                <TextBox Text="{Binding Name}" PlaceholderText="Name (for example SliderBorder)"/>
+                                <c:PopupBox Grid.Column="1" StaysOpen="True" Margin="8,0,0,0">
+                                    <c:PopupBox.ToggleContent>
+                                        <Border Width="34" Height="34" CornerRadius="17"
+                                                Background="{Binding Color, Converter={StaticResource ColorBrushConverter}}"/>
+                                    </c:PopupBox.ToggleContent>
+                                    <ColorPicker Margin="10" Color="{Binding Color, Converter={StaticResource DrawingColorConverter}, Mode=TwoWay}"/>
+                                </c:PopupBox>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Add special colour" Command="{Binding AddSpecialCommand}"/>
+                    <Button Margin="8,0,0,0" Content="Remove last" Command="{Binding RemoveSpecialCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+            <ProgressBar Value="{Binding #This.Progress}" Height="10" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Margin="16,0,0,0" Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                    IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                <icons:MaterialIcon Kind="Play" Width="30" Height="30"/>
+            </Button>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

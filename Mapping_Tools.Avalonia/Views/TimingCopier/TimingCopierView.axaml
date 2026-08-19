@@ -1,0 +1,60 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.TimingCopier.TimingCopierView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:MapPathStringToCountStringConverter x:Key="PathCountConverter"/>
+        <domain:BeatDivisorArrayToStringConverter x:Key="BeatDivisorConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="*,Auto">
+        <ScrollViewer>
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="10">
+                    <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,12,0,0">
+                        <TextBox Text="{Binding ImportPath}" PlaceholderText="Copy timing from"/>
+                        <Button Grid.Column="1" Theme="{StaticResource IconButton}" Command="{Binding ImportLoadCommand}" ToolTip.Tip="Get the current beatmap">
+                            <icons:MaterialIcon Kind="RestoreFromTrash" Width="26" Height="26"/>
+                        </Button>
+                        <Button Grid.Column="2" Theme="{StaticResource IconButton}" Command="{Binding ImportBrowseCommand}" ToolTip.Tip="Browse">
+                            <icons:MaterialIcon Kind="Folder" Width="26" Height="26"/>
+                        </Button>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                        <TextBox x:Name="ExportPathBox" Text="{Binding ExportPath}" PlaceholderText="Copy timing to (separate multiple paths with |)"/>
+                        <TextBlock Grid.Column="1" Margin="8,0" VerticalAlignment="Center" Text="{Binding #ExportPathBox.Text, Converter={StaticResource PathCountConverter}}"/>
+                        <Button Grid.Column="2" Theme="{StaticResource IconButton}" Command="{Binding ExportLoadCommand}">
+                            <icons:MaterialIcon Kind="RestoreFromTrash" Width="26" Height="26"/>
+                        </Button>
+                        <Button Grid.Column="3" Theme="{StaticResource IconButton}" Command="{Binding ExportBrowseCommand}">
+                            <icons:MaterialIcon Kind="Folder" Width="26" Height="26"/>
+                        </Button>
+                    </Grid>
+                    <ComboBox x:Name="ResnapModeBox" SelectedValue="{Binding ResnapMode}" SelectedValueBinding="{Binding Content}"
+                              PlaceholderText="Resnapping mode" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Number of beats between objects stays the same"/>
+                        <ComboBoxItem Content="Just resnap"/>
+                        <ComboBoxItem Content="Don't move objects"/>
+                    </ComboBox>
+                    <TextBlock Text="Signatures" Margin="0,10,0,0" FontWeight="Bold"/>
+                    <c:ValidatedTextBox x:Name="BeatDivisorsBox" Width="300" HorizontalAlignment="Left"
+                                        Value="{Binding BeatDivisors}" Converter="{StaticResource BeatDivisorConverter}"
+                                        PlaceholderText="Beat divisors"/>
+                </StackPanel>
+                <Button Grid.Column="1" VerticalAlignment="Bottom" Margin="10"
+                        Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                        IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                    <icons:MaterialIcon Kind="Play" Height="30" Width="30"/>
+                </Button>
+            </Grid>
+        </ScrollViewer>
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <TextBlock Text="Made by OliBomby" FontWeight="Bold" Opacity="0.58"/>
+            <ProgressBar Grid.Column="1" Margin="20,0" Height="20" Value="{Binding #This.Progress}"/>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

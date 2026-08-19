@@ -302,8 +302,8 @@
                 </ScrollViewer>
 
                 <StackPanel Grid.Row="3">
-                    <TextBlock Text="Beatmap file name can not be over 255 characters long." Foreground="Red" Margin="10" Visibility="{Binding BeatmapFileNameOverflowErrorVisibility, FallbackValue=Collapsed}"/>
-                    <TextBlock Text="Tags can have at most 100 words and 1024 characters." Foreground="Red" Margin="10" Visibility="{Binding TagsOverflowErrorVisibility, FallbackValue=Collapsed}"/>
+                    <TextBlock Text="Beatmap file name can not be over 255 characters long." Foreground="Red" Margin="10" Visibility="{Binding HasBeatmapFileNameOverflowError, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}"/>
+                    <TextBlock Text="Tags can have at most 100 words and 1024 characters." Foreground="Red" Margin="10" Visibility="{Binding HasTagsOverflowError, Converter={StaticResource BooleanToVisibilityConverter}, FallbackValue=Collapsed}"/>
                 </StackPanel>
             </Grid>
             

@@ -2,7 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
+using System.Linq;
+using Newtonsoft.Json;
 using Mapping_Tools.Classes.BeatmapHelper;
+using Mapping_Tools.Components.Domain;
 using Mapping_Tools.Classes.BeatmapHelper.Enums;
 using Mapping_Tools.Classes.SystemTools;
 
@@ -83,8 +87,50 @@ namespace Mapping_Tools.Classes.HitsoundStuff {
         /// </summary>
         public List<double> Times {
             get => times;
-            set => Set(ref times, value);
+            set {
+                if (Set(ref times, value)) RaisePropertyChanged(nameof(TimesText));
+            }
         }
+
+        /// <summary>
+        /// The times of this layer, as text the user can edit.
+        /// </summary>
+        /// <remarks>
+        /// A value that does not parse is refused with a short reason. It must not be
+        /// a plain <see cref="FormatException"/>: the binding shows the whole exception,
+        /// stack trace and all, under the text box.
+        /// </remarks>
+        [JsonIgnore]
+        public string TimesText {
+            get => string.Join(", ", Times.Select(o => o.ToString(CultureInfo.InvariantCulture)));
+            set {
+                var parts = (value ?? string.Empty)
+                    .Split(new[] { ',', ';', ' ', '\r', '\n', '\t' },
+                        StringSplitOptions.RemoveEmptyEntries);
+                var parsed = new List<double>(parts.Length);
+                foreach (var part in parts) {
+                    if (!double.TryParse(part, NumberStyles.Float, CultureInfo.InvariantCulture,
+                            out double time)) {
+                        throw new ValidationMessage($"\"{part}\" is not a number.");
+                    }
+                    parsed.Add(time);
+                }
+                parsed.Sort();
+                Times = parsed;
+            }
+        }
+
+        [JsonIgnore]
+        public IEnumerable<SampleSet> SampleSets =>
+            Enum.GetValues(typeof(SampleSet)) as SampleSet[];
+
+        [JsonIgnore]
+        public IEnumerable<Hitsound> Hitsounds =>
+            Enum.GetValues(typeof(Hitsound)) as Hitsound[];
+
+        [JsonIgnore]
+        public IEnumerable<ImportType> ImportTypes =>
+            Enum.GetValues(typeof(ImportType)) as ImportType[];
 
         /// <summary>
         /// Convenience field for binding with the sampleset combo box.

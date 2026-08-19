@@ -7,12 +7,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Windows;
 using Mapping_Tools.Classes.BeatmapHelper.Enums;
 using Mapping_Tools.Classes.ToolHelpers;
 
 namespace Mapping_Tools.Classes.HitsoundStuff {
-    class HitsoundImporter {
+    public static class HitsoundImporter {
         public static List<double> TimesFromStack(string path, double x, double y) {
             List<double> times = new List<double>();
             var editor = CorePlatform.EditorReader.GetNewestVersionOrNot(path);

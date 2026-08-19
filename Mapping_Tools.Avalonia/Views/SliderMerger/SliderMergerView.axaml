@@ -1,0 +1,45 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.SliderMerger.SliderMergerView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:DoubleToStringConverter x:Key="DoubleConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="*,Auto">
+        <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+            <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+            <c:ValidatedTextBox Width="260" HorizontalAlignment="Left" Margin="0,20,0,0"
+                                Value="{Binding Leniency}" Converter="{StaticResource DoubleConverter}"
+                                PlaceholderText="Merge connection leniency">
+                <domain:IsGreaterOrEqualRule Value="0"/>
+            </c:ValidatedTextBox>
+            <Grid ColumnDefinitions="260,260" ColumnSpacing="12" Margin="0,16,0,0">
+                <ComboBox ItemsSource="{Binding ImportModes}" SelectedItem="{Binding ImportModeSetting}"
+                          PlaceholderText="Object selection mode"/>
+                <TextBox Grid.Column="1" Text="{Binding TimeCode}"
+                         IsVisible="{Binding IsTimeCodeBoxVisible}" PlaceholderText="Time code"/>
+            </Grid>
+            <ComboBox Width="260" HorizontalAlignment="Left" Margin="0,16,0,0"
+                      ItemsSource="{Binding ConnectionModes}"
+                      SelectedItem="{Binding ConnectionModeSetting}"
+                      PlaceholderText="Connection mode"/>
+            <CheckBox Margin="0,16,0,0" Content="Merge on slider end"
+                      IsChecked="{Binding MergeOnSliderEnd}"/>
+            <CheckBox Content="Use linear curve type when possible"
+                      IsChecked="{Binding LinearOnLinear}"/>
+            <TextBlock Margin="0,16,0,0" Opacity="0.65" TextWrapping="Wrap"
+                       Text="Selected-object mode requires Editor Reader; use bookmarked, time, or everything on Linux."/>
+        </StackPanel>
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,16,0,0">
+            <ProgressBar Value="{Binding #This.Progress}" Height="10" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Margin="16,0,0,0" Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                    IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                <icons:MaterialIcon Kind="Play" Width="30" Height="30"/>
+            </Button>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

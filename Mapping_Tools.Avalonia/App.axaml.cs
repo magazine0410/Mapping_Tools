@@ -2,6 +2,7 @@ using System.IO;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Mapping_Tools.Avalonia.Platform;
 using Mapping_Tools.Classes.SystemTools.Platform;
 
@@ -22,6 +23,9 @@ namespace Mapping_Tools.Avalonia {
 
                 var settings = JsonCoreSettings.Load();
                 CorePlatform.Settings = settings;
+                RequestedThemeVariant = settings.DarkTheme
+                    ? ThemeVariant.Dark
+                    : ThemeVariant.Light;
                 Directory.CreateDirectory(settings.BackupsPath);
 
                 var window = new MainWindow();

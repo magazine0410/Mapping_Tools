@@ -1,0 +1,49 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.TimingHelper.TimingHelperView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:DoubleToStringConverter x:Key="DoubleConverter"/>
+        <domain:BeatDivisorArrayToStringConverter x:Key="BeatDivisorConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="*,Auto">
+        <ScrollViewer>
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="8">
+                    <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+                    <TextBlock Text="Markers" Margin="0,12,0,0" FontWeight="Bold"/>
+                    <CheckBox Content="Hit objects" IsChecked="{Binding Objects}"/>
+                    <CheckBox Content="Bookmarks" IsChecked="{Binding Bookmarks}"/>
+                    <CheckBox Content="Greenlines" IsChecked="{Binding Greenlines}"/>
+                    <CheckBox Content="Redlines" IsChecked="{Binding Redlines}"/>
+                    <CheckBox Content="Omit first barline on added redlines" IsChecked="{Binding OmitBarline}"/>
+                    <c:ValidatedTextBox x:Name="LeniencyBox" Width="260" HorizontalAlignment="Left"
+                                        PlaceholderText="Leniency in milliseconds"
+                                        Value="{Binding Leniency}" Converter="{StaticResource DoubleConverter}" ConverterParameter="3">
+                        <domain:IsGreaterOrEqualRule Value="0"/>
+                    </c:ValidatedTextBox>
+                    <c:ValidatedTextBox Width="260" HorizontalAlignment="Left"
+                                        PlaceholderText="Fixed beats between markers (-1: automatic)"
+                                        Value="{Binding BeatsBetween}" Converter="{StaticResource DoubleConverter}" ConverterParameter="-1"/>
+                    <TextBlock Text="Signatures" Margin="0,10,0,0" FontWeight="Bold"/>
+                    <c:ValidatedTextBox x:Name="BeatDivisorsBox" Width="300" HorizontalAlignment="Left"
+                                        PlaceholderText="Beat divisors"
+                                        Value="{Binding BeatDivisors}" Converter="{StaticResource BeatDivisorConverter}"/>
+                </StackPanel>
+                <Button Grid.Column="1" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="10"
+                        Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                        IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                    <icons:MaterialIcon Kind="Play" Height="30" Width="30"/>
+                </Button>
+            </Grid>
+        </ScrollViewer>
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <TextBlock Text="Made by OliBomby" FontWeight="Bold" Opacity="0.58"/>
+            <ProgressBar Grid.Column="1" Margin="20,0" Height="20" Value="{Binding #This.Progress}"/>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

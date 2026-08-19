@@ -1,0 +1,56 @@
+<views:MappingTool xmlns="https://github.com/avaloniaui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                   x:Class="Mapping_Tools.Avalonia.Views.Standard.StandardView">
+    <Grid Margin="24" RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,24,*">
+        <StackPanel Grid.Column="0">
+            <TextBlock Text="Get started" FontSize="32" FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+            <TextBlock Text="{Binding VersionText}" Margin="0,4,0,20" Opacity="0.7"/>
+            <TextBlock Text="1. Choose your osu! and Songs folders in Preferences."
+                       TextWrapping="Wrap" Margin="0,0,0,10"/>
+            <TextBlock Text="2. Use File → Open beatmap, or open a tool and choose its input file."
+                       TextWrapping="Wrap" Margin="0,0,0,10"/>
+            <TextBlock Text="3. Read the ? help, configure the tool, then press Run."
+                       TextWrapping="Wrap" Margin="0,0,0,10"/>
+            <TextBlock Text="4. Reload the beatmap in osu! without saving over the changes."
+                       TextWrapping="Wrap" Margin="0,0,0,18"/>
+            <Border Background="{DynamicResource MaterialDesignCardBackground}"
+                    BorderBrush="{DynamicResource MaterialDesignDivider}"
+                    BorderThickness="1" CornerRadius="6" Padding="12">
+                <TextBlock Text="Quick Run and live editor selection are unavailable until an editor reader is implemented for Linux."
+                           TextWrapping="Wrap"/>
+            </Border>
+        </StackPanel>
+
+        <Border Grid.Column="1" Width="1" Background="{DynamicResource MaterialDesignDivider}"/>
+
+        <Grid Grid.Column="2" RowDefinitions="Auto,Auto,*">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="Changelog" FontSize="32" FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+                <Button Grid.Column="1" Content="Refresh" Click="Refresh_Click"/>
+            </Grid>
+            <TextBlock Grid.Row="1" Text="{Binding ReleaseStatus}" Margin="0,8,0,12"
+                       Opacity="0.7" TextWrapping="Wrap"/>
+            <ListBox Grid.Row="2" ItemsSource="{Binding Releases}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border Margin="0,0,0,10" Padding="10"
+                                BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                BorderThickness="0,0,0,1">
+                            <StackPanel>
+                                <Button Content="{Binding Title}" HorizontalAlignment="Left"
+                                        FontWeight="SemiBold" FontSize="17"
+                                        Tag="{Binding Url}" Click="Release_Click"/>
+                                <TextBlock Text="{Binding PublishedText}" Opacity="0.65"/>
+                                <TextBlock Text="{Binding Body}" Margin="0,6,0,0"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </Grid>
+</views:MappingTool>

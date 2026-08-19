@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 
 namespace Mapping_Tools.Classes.HitsoundStuff {
     /// <summary>
@@ -145,6 +146,14 @@ namespace Mapping_Tools.Classes.HitsoundStuff {
                 OnPropertyChanged();
             }
         }
+
+        [JsonIgnore]
+        public IEnumerable<Hitsound> Hitsounds =>
+            Enum.GetValues(typeof(Hitsound)) as Hitsound[];
+
+        [JsonIgnore]
+        public IEnumerable<SampleSet> SampleSets =>
+            Enum.GetValues(typeof(SampleSet)) as SampleSet[];
 
         /// <summary>
         /// 

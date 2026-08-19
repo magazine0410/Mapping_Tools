@@ -1,0 +1,99 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.SliderPicturator.SliderPicturatorView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:DoubleToStringConverter x:Key="DoubleConverter"/>
+        <domain:IntToStringConverter x:Key="IntConverter"/>
+        <domain:DrawingColorToUiColorConverter x:Key="DrawingColorConverter"/>
+        <domain:ColorToBrushConverter x:Key="ColorBrushConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+        <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+        <ScrollViewer Grid.Row="1" Margin="0,12,0,0">
+            <Grid ColumnDefinitions="380,*" ColumnSpacing="24">
+                <StackPanel>
+                    <TextBlock Text="Image" FontSize="20" FontWeight="SemiBold"/>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,8,0,0">
+                        <TextBox Text="{Binding PictureFile}" PlaceholderText="Image file"/>
+                        <Button Grid.Column="1" Theme="{StaticResource IconButton}" Command="{Binding UploadFileCommand}" ToolTip.Tip="Choose image">
+                            <icons:MaterialIcon Kind="Folder" Width="24" Height="24"/>
+                        </Button>
+                    </Grid>
+
+                    <TextBlock Text="Placement" FontSize="20" FontWeight="SemiBold" Margin="0,18,0,8"/>
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                        <c:ValidatedTextBox Value="{Binding TimeCode}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Start time (ms)"/>
+                        <c:ValidatedTextBox Grid.Column="1" Value="{Binding Duration}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Duration (ms)"/>
+                        <c:ValidatedTextBox Grid.Row="1" Value="{Binding SliderStartX}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Slider X"/>
+                        <c:ValidatedTextBox Grid.Row="1" Grid.Column="1" Value="{Binding SliderStartY}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Slider Y"/>
+                        <c:ValidatedTextBox Grid.Row="2" Value="{Binding ImageStartX}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Image X"/>
+                        <c:ValidatedTextBox Grid.Row="2" Grid.Column="1" Value="{Binding ImageStartY}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Image Y"/>
+                        <c:ValidatedTextBox Grid.Row="3" Value="{Binding YResolution}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Display height"/>
+                        <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding ViewportSizes}" SelectedItem="{Binding ViewportSize}" PlaceholderText="Viewport size"/>
+                    </Grid>
+
+                    <TextBlock Text="Slider colours" FontSize="20" FontWeight="SemiBold" Margin="0,18,0,8"/>
+                    <CheckBox Content="Use a map combo colour" IsChecked="{Binding UseMapComboColors}"/>
+                    <ComboBox ItemsSource="{Binding AvailableColors}" SelectedItem="{Binding ComboColor}"
+                              IsVisible="{Binding ShouldShowCcPicker}" Margin="0,8,0,0">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="100" Height="24" CornerRadius="4" Background="{Binding Converter={StaticResource ColorBrushConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <ColorPicker Color="{Binding TrackColorPickerColor, Converter={StaticResource DrawingColorConverter}, Mode=TwoWay}"
+                                 IsVisible="{Binding ShouldShowPalette}" Margin="0,8,0,0"/>
+                    <TextBlock Text="Border colour" Margin="0,8,0,4"/>
+                    <ColorPicker Color="{Binding BorderColor, Converter={StaticResource DrawingColorConverter}, Mode=TwoWay}"/>
+
+                    <TextBlock Text="Rendering" FontSize="20" FontWeight="SemiBold" Margin="0,18,0,8"/>
+                    <WrapPanel>
+                        <CheckBox Content="Transparent black" IsChecked="{Binding BlackOn}" Margin="0,0,14,6"/>
+                        <CheckBox Content="Border" IsChecked="{Binding BorderOn}" Margin="0,0,14,6"/>
+                        <CheckBox Content="Red" IsChecked="{Binding RedOn}" Margin="0,0,14,6"/>
+                        <CheckBox Content="Green" IsChecked="{Binding GreenOn}" Margin="0,0,14,6"/>
+                        <CheckBox Content="Blue" IsChecked="{Binding BlueOn}" Margin="0,0,14,6"/>
+                        <CheckBox Content="Alpha" IsChecked="{Binding AlphaOn}" Margin="0,0,14,6"/>
+                    </WrapPanel>
+                    <CheckBox Content="Set slider colours in the beatmap" IsChecked="{Binding SetBeatmapColors}"/>
+                    <TextBlock Text="Image quality" Margin="0,10,0,0"/>
+                    <Slider Minimum="1" Maximum="101" TickFrequency="10" Value="{Binding Quality}"/>
+                    <TextBlock Text="{Binding SegmentCount, StringFormat='Estimated segments: {0}'}" Opacity="0.65"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button Content="Remove slider path" Command="{Binding RemoveCommand}"/>
+                        <Button Content="Import selected slider" Command="{Binding ImportCommand}" Margin="8,0,0,0"
+                                IsEnabled="{Binding IsSliderImportAvailable}"
+                                ToolTip.Tip="Optional: requires editor-reader support"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Grid.Column="1" BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                        BorderThickness="1" CornerRadius="6" Padding="12" MinHeight="320">
+                    <Grid>
+                        <Image x:Name="PreviewImage" Stretch="Uniform"/>
+                        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsProcessingPreview}"
+                                     VerticalAlignment="Bottom" Height="8"/>
+                        <TextBlock Text="{Binding PreviewError}" Foreground="{DynamicResource SystemErrorTextColor}"
+                                   TextWrapping="Wrap" VerticalAlignment="Bottom" Margin="0,0,0,16"/>
+                        <TextBlock Text="Choose an image to preview the slider colours."
+                                   IsVisible="{Binding ShouldShowPreviewPrompt}" Opacity="0.45"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </ScrollViewer>
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+            <ProgressBar Value="{Binding #This.Progress}" Height="10" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Margin="16,0,0,0" Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                    IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                <icons:MaterialIcon Kind="Play" Width="30" Height="30"/>
+            </Button>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

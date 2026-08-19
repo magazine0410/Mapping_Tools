@@ -1,0 +1,122 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.PatternGallery.PatternGalleryView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:DoubleToStringConverter x:Key="DoubleConverter"/>
+        <domain:TimeToStringConverter x:Key="TimeConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+            <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+            <TextBox Grid.Column="1" Margin="18,0" Text="{Binding CollectionName}"
+                     FontSize="20" VerticalContentAlignment="Center"/>
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Button Content="Restore" Click="RestoreCollection_Click"/>
+                <Button Margin="8,0" Content="Import collection" Click="ImportCollection_Click"/>
+                <Button Content="Export collection" Click="ExportCollection_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,300" ColumnSpacing="18" Margin="0,14,0,0">
+            <Grid RowDefinitions="Auto,*,Auto">
+                <Grid ColumnDefinitions="*,180,Auto" ColumnSpacing="8">
+                    <TextBox Text="{Binding SearchFilter}" PlaceholderText="Search patterns"/>
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding SortableProperties}"
+                              SelectedItem="{Binding SortProperty}"/>
+                    <Button Grid.Column="2" Click="ReverseSort_Click"
+                                  ToolTip.Tip="Reverse sort order">
+                        <icons:MaterialIcon Kind="SortReverseVariant" Width="24" Height="24"/>
+                    </Button>
+                </Grid>
+                <ListBox Grid.Row="1" Margin="0,10,0,0" ItemsSource="{Binding VisiblePatterns}"
+                         DoubleTapped="Pattern_DoubleTapped">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                    BorderThickness="0,0,0,1" Padding="8">
+                                <Grid ColumnDefinitions="Auto,*,100,100,100">
+                                    <CheckBox IsChecked="{Binding IsSelected}"/>
+                                    <StackPanel Grid.Column="1" Margin="8,0">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Group}" Opacity="0.6"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="2" Text="{Binding ObjectCount, StringFormat={}{0} objects}"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding Duration}"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding UseCount, StringFormat={}used {0}×}"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,*,Auto" Margin="0,10,0,0">
+                    <Button Content="Add beatmap" Click="AddBeatmap_Click"/>
+                    <c:PopupBox Grid.Column="1" Margin="8,0" StaysOpen="True">
+                        <c:PopupBox.ToggleContent>
+                            <TextBlock Text="Add code" Margin="8,4"/>
+                        </c:PopupBox.ToggleContent>
+                        <StackPanel Width="560" Margin="10" Spacing="8">
+                            <TextBox Text="{Binding #This.ImportName}" PlaceholderText="Pattern name"/>
+                            <TextBox Text="{Binding #This.HitObjectCode}" PlaceholderText="Hit-object lines"
+                                     AcceptsReturn="True" MinHeight="100"/>
+                            <TextBox Text="{Binding #This.TimingCode}" PlaceholderText="Timing-point lines (optional)"
+                                     AcceptsReturn="True" MinHeight="70"/>
+                            <Button Content="Add pattern" Click="AddCode_Click" HorizontalAlignment="Right"/>
+                        </StackPanel>
+                    </c:PopupBox>
+                    <Button Grid.Column="2" Content="Remove selected" Command="{Binding RemoveCommand}"/>
+                    <TextBox Grid.Column="3" Margin="8,0" Text="{Binding #This.GroupName}"
+                             PlaceholderText="Group selected patterns"/>
+                    <Button Grid.Column="4" Content="Apply group" Click="ApplyGroup_Click"/>
+                </Grid>
+            </Grid>
+
+            <ScrollViewer Grid.Column="1">
+                <StackPanel>
+                    <TextBlock Text="Placement" FontSize="20" FontWeight="SemiBold"/>
+                    <ComboBox Margin="0,8,0,0" ItemsSource="{Binding ExportTimeModes}"
+                              SelectedItem="{Binding ExportTimeMode}" PlaceholderText="Export time"/>
+                    <c:ValidatedTextBox Margin="0,8,0,0" IsVisible="{Binding CustomExportTimeVisible}"
+                                        Value="{Binding CustomExportTime}" Converter="{StaticResource TimeConverter}"
+                                        PlaceholderText="Custom export time"/>
+                    <ComboBox Margin="0,8,0,0" ItemsSource="{Binding PatternOverwriteModes}"
+                              SelectedItem="{Binding PatternOverwriteMode}" PlaceholderText="Object overwrite mode"/>
+                    <ComboBox Margin="0,8,0,0" ItemsSource="{Binding TimingOverwriteModes}"
+                              SelectedItem="{Binding TimingOverwriteMode}" PlaceholderText="Timing overwrite mode"/>
+                    <c:ValidatedTextBox Margin="0,8,0,0" Value="{Binding Padding}"
+                                        Converter="{StaticResource DoubleConverter}" PlaceholderText="Padding (ms)"/>
+                    <c:ValidatedTextBox Margin="0,8,0,0" Value="{Binding PartingDistance}"
+                                        Converter="{StaticResource DoubleConverter}" PlaceholderText="Parting distance (beats)"/>
+                    <c:ValidatedTextBox Margin="0,8,0,0" Value="{Binding CustomScale}"
+                                        Converter="{StaticResource DoubleConverter}" PlaceholderText="Custom scale"/>
+                    <c:ValidatedTextBox Margin="0,8,0,0" Value="{Binding CustomRotate}"
+                                        Converter="{StaticResource DoubleConverter}" PlaceholderText="Rotation (degrees)"/>
+                    <CheckBox Margin="0,10,0,0" Content="Include hitsounds" IsChecked="{Binding IncludeHitsounds}"/>
+                    <CheckBox Content="Include kiai" IsChecked="{Binding IncludeKiai}"/>
+                    <CheckBox Content="Scale to target circle size" IsChecked="{Binding ScaleToNewCircleSize}"/>
+                    <CheckBox Content="Scale to target timing" IsChecked="{Binding ScaleToNewTiming}"/>
+                    <CheckBox Content="Snap to target timing" IsChecked="{Binding SnapToNewTiming}"/>
+                    <CheckBox Content="Fix global SV" IsChecked="{Binding FixGlobalSv}"/>
+                    <CheckBox Content="Fix BPM SV" IsChecked="{Binding FixBpmSv}"/>
+                    <CheckBox Content="Fix colour hax" IsChecked="{Binding FixColourHax}"/>
+                    <CheckBox Content="Fix stack leniency" IsChecked="{Binding FixStackLeniency}"/>
+                    <CheckBox Content="Fix tick rate" IsChecked="{Binding FixTickRate}"/>
+                    <TextBlock Margin="0,12,0,0" Opacity="0.65" TextWrapping="Wrap"
+                               Text="Current-time placement requires Editor Reader. Pattern-offset and custom-time placement work from disk."/>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+            <ProgressBar Value="{Binding #This.Progress}" Height="10" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Margin="16,0,0,0" Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                    IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                <icons:MaterialIcon Kind="Play" Width="30" Height="30"/>
+            </Button>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

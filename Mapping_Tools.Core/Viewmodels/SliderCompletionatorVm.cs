@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using Mapping_Tools.Classes.SystemTools;
 using Newtonsoft.Json;
 
@@ -20,7 +19,7 @@ namespace Mapping_Tools.Viewmodels {
             get => importModeSetting;
             set {
                 if (Set(ref importModeSetting, value)) {
-                    RaisePropertyChanged(nameof(TimeCodeBoxVisibility));
+                    RaisePropertyChanged(nameof(IsTimeCodeBoxVisible));
                 }
             }
         }
@@ -29,17 +28,17 @@ namespace Mapping_Tools.Viewmodels {
         public IEnumerable<ImportMode> ImportModes => Enum.GetValues(typeof(ImportMode)).Cast<ImportMode>();
 
         [JsonIgnore]
-        public Visibility TimeCodeBoxVisibility => ImportModeSetting == ImportMode.Time ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsTimeCodeBoxVisible => ImportModeSetting == ImportMode.Time;
 
         private FreeVariable freeVariableSetting;
         public FreeVariable FreeVariableSetting {
             get => freeVariableSetting;
             set {
                 if (Set(ref freeVariableSetting, value)) {
-                    RaisePropertyChanged(nameof(DurationBoxVisibility));
-                    RaisePropertyChanged(nameof(EndTimeBoxVisibility));
-                    RaisePropertyChanged(nameof(LengthBoxVisibility));
-                    RaisePropertyChanged(nameof(VelocityBoxVisibility));
+                    RaisePropertyChanged(nameof(IsDurationBoxVisible));
+                    RaisePropertyChanged(nameof(IsEndTimeBoxVisible));
+                    RaisePropertyChanged(nameof(IsLengthBoxVisible));
+                    RaisePropertyChanged(nameof(IsVelocityBoxVisible));
                 }
             }
         }
@@ -48,16 +47,16 @@ namespace Mapping_Tools.Viewmodels {
         public IEnumerable<FreeVariable> FreeVariables => Enum.GetValues(typeof(FreeVariable)).Cast<FreeVariable>();
 
         [JsonIgnore]
-        public Visibility DurationBoxVisibility => FreeVariableSetting != FreeVariable.Duration && !UseEndTime ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsDurationBoxVisible => FreeVariableSetting != FreeVariable.Duration && !UseEndTime;
 
         [JsonIgnore]
-        public Visibility EndTimeBoxVisibility => FreeVariableSetting != FreeVariable.Duration && UseEndTime && !UseCurrentEditorTime ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsEndTimeBoxVisible => FreeVariableSetting != FreeVariable.Duration && UseEndTime && !UseCurrentEditorTime;
 
         [JsonIgnore]
-        public Visibility LengthBoxVisibility => FreeVariableSetting != FreeVariable.Length ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsLengthBoxVisible => FreeVariableSetting != FreeVariable.Length;
 
         [JsonIgnore]
-        public Visibility VelocityBoxVisibility => FreeVariableSetting != FreeVariable.Velocity ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsVelocityBoxVisible => FreeVariableSetting != FreeVariable.Velocity;
 
         private string timeCode;
         public string TimeCode {
@@ -100,8 +99,8 @@ namespace Mapping_Tools.Viewmodels {
             get => useEndTime;
             set {
                 if (Set(ref useEndTime, value)) {
-                    RaisePropertyChanged(nameof(DurationBoxVisibility));
-                    RaisePropertyChanged(nameof(EndTimeBoxVisibility));
+                    RaisePropertyChanged(nameof(IsDurationBoxVisible));
+                    RaisePropertyChanged(nameof(IsEndTimeBoxVisible));
                 }
             }
         }
@@ -111,8 +110,8 @@ namespace Mapping_Tools.Viewmodels {
             get => useCurrentEditorTime;
             set {
                 if (Set(ref useCurrentEditorTime, value)) {
-                    RaisePropertyChanged(nameof(DurationBoxVisibility));
-                    RaisePropertyChanged(nameof(EndTimeBoxVisibility));
+                    RaisePropertyChanged(nameof(IsDurationBoxVisible));
+                    RaisePropertyChanged(nameof(IsEndTimeBoxVisible));
                 }
             }
         }

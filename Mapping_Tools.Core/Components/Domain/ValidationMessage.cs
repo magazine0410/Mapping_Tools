@@ -6,7 +6,9 @@ namespace Mapping_Tools.Components.Domain {
     /// </summary>
     /// <remarks>
     /// Avalonia shows a data validation error by its <c>ToString</c>. A plain exception
-    /// puts its type name in front of the message, which the user does not need.
+    /// puts its type name and its stack trace in front of the message, which the user
+    /// does not need. This lives in the core so that a view model can refuse a value
+    /// without knowing which host is showing it.
     /// </remarks>
     public sealed class ValidationMessage : Exception {
         public ValidationMessage(string message) : base(message) { }

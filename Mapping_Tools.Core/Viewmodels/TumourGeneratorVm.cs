@@ -6,10 +6,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using Mapping_Tools.Classes;
 using Mapping_Tools.Classes.BeatmapHelper;
 using Mapping_Tools.Classes.SystemTools;
+using Mapping_Tools.Classes.SystemTools.Platform;
 using Mapping_Tools.Classes.ToolHelpers;
 using Mapping_Tools.Classes.ToolHelpers.Sliders.Newgen;
 using Mapping_Tools.Classes.Tools.TumourGenerating;
@@ -54,7 +54,7 @@ namespace Mapping_Tools.Viewmodels {
             get => importModeSetting;
             set {
                 if (Set(ref importModeSetting, value)) {
-                    RaisePropertyChanged(nameof(TimeCodeBoxVisibility));
+                    RaisePropertyChanged(nameof(IsTimeCodeBoxVisible));
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace Mapping_Tools.Viewmodels {
         }
 
         [JsonIgnore]
-        public Visibility TimeCodeBoxVisibility => ImportModeSetting == ImportMode.Time ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsTimeCodeBoxVisible => ImportModeSetting == ImportMode.Time;
 
         private ObservableCollection<TumourLayer> tumourLayers;
         public ObservableCollection<TumourLayer> TumourLayers {
@@ -238,10 +238,13 @@ namespace Mapping_Tools.Viewmodels {
             FixSv = true;
             TumourLayers = new ObservableCollection<TumourLayer>();
 
-            ImportCommand = new CommandImplementation(_ => Import(ImportModeSetting == ImportMode.Selected ?
-                IOHelper.GetCurrentBeatmapOrCurrentBeatmap(false) :
-                MainWindow.AppWindow.GetCurrentMaps()[0])
-            );
+            ImportCommand = new CommandImplementation(_ => {
+                string path = CorePlatform.FileDialogs.GetCurrentBeatmaps().FirstOrDefault();
+                if (string.IsNullOrWhiteSpace(path)) {
+                    path = CorePlatform.FileDialogs.BeatmapFileDialog().FirstOrDefault();
+                }
+                if (!string.IsNullOrWhiteSpace(path)) Import(path);
+            });
             AddCommand = new CommandImplementation(
                 _ => {
                     try {
@@ -296,10 +299,11 @@ namespace Mapping_Tools.Viewmodels {
 
         public void Import(string path) {
             try {
-                Editor_Reader.EditorReader reader = EditorReaderStuff.GetFullEditorReaderOrNot(out var editorReaderException1);
-
-                if (ImportModeSetting == ImportMode.Selected && editorReaderException1 != null) {
-                    throw new Exception("Could not fetch selected hit objects.", editorReaderException1);
+                object reader = CorePlatform.EditorReader.GetFullEditorReaderOrNot();
+                if (ImportModeSetting == ImportMode.Selected &&
+                    !CorePlatform.EditorReader.IsAvailable) {
+                    throw new InvalidOperationException(
+                        "Selected-object mode requires the editor reader.");
                 }
 
                 BeatmapEditor editor;
@@ -307,7 +311,8 @@ namespace Mapping_Tools.Viewmodels {
 
                 switch (ImportModeSetting) {
                     case ImportMode.Selected:
-                        editor = EditorReaderStuff.GetNewestVersionOrNot(path, reader, out var selected, out var editorReaderException2);
+                        editor = CorePlatform.EditorReader.GetNewestVersionOrNot(path, reader,
+                            out var selected, out var editorReaderException2);
 
                         if (editorReaderException2 != null) {
                             throw new Exception("Could not fetch selected hit objects.", editorReaderException2);
@@ -330,13 +335,14 @@ namespace Mapping_Tools.Viewmodels {
                 }
 
                 if (markedObjects is null || !markedObjects.Any(o => o.IsSlider)) {
-                    Task.Factory.StartNew(() => MainWindow.MessageQueue.Enqueue(@"Could not find any sliders in imported hit objects."));
+                    CorePlatform.Notifications.Notify(
+                        "Could not find any sliders in imported hit objects.");
                     return;
                 }
 
                 PreviewHitObject = markedObjects.First(s => s.IsSlider);
                 CircleSize = editor.Beatmap.Difficulty["CircleSize"].DoubleValue;
-                Task.Factory.StartNew(() => MainWindow.MessageQueue.Enqueue(@"Successfully imported slider."));
+                CorePlatform.Notifications.Notify("Successfully imported slider.");
             } catch (Exception ex) {
                 ex.Show();
             }
@@ -383,14 +389,11 @@ namespace Mapping_Tools.Viewmodels {
                 };
                 tumourGenerator.TumourGenerate(args, ct);
 
-                // Send the tumoured slider to the main thread
-                Application.Current.Dispatcher.Invoke(() => {
-                    TumouredPreviewHitObject = args;
-                    layerRangeSliderMaxes.Clear();
-                    layerRangeSliderMaxes.AddRange(tumourGenerator.LayerLengths);
-                    RaisePropertyChanged(nameof(TumourStartSliderMin));
-                    RaisePropertyChanged(nameof(TumourRangeSliderMax));
-                });
+                TumouredPreviewHitObject = args;
+                layerRangeSliderMaxes.Clear();
+                layerRangeSliderMaxes.AddRange(tumourGenerator.LayerLengths);
+                RaisePropertyChanged(nameof(TumourStartSliderMin));
+                RaisePropertyChanged(nameof(TumourRangeSliderMax));
 
                 // Clean up the cancellation token
                 lock (previewTokenLock) {
@@ -403,11 +406,8 @@ namespace Mapping_Tools.Viewmodels {
                 if (task.IsFaulted) {
                     task.Exception.Show();
                 }
-                // Stop the processing indicator
-                Application.Current.Dispatcher.Invoke(() => {
-                    IsProcessingPreview = false;
-                });
-            }, ct);
+                IsProcessingPreview = false;
+            });
         }
 
         public enum ImportMode {

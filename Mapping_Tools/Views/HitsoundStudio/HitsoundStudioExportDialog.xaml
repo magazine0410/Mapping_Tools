@@ -35,7 +35,7 @@
             <CheckBox Content="Export hitsound map" IsChecked="{Binding ExportMap}" Margin="0 15 0 0"
                       ToolTip="Check this to export the hitsound beatmap."/>
             <CheckBox Content="Export hitsound samples" IsChecked="{Binding ExportSamples}"
-                      Visibility="{Binding SampleExportSettingsVisibility}"
+                      Visibility="{Binding AreSampleExportSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="Check this to export the custom hitsound samples."/>
             <CheckBox Content="Show results" IsChecked="{Binding ShowResults}"
                       ToolTip="Check this to see the resulting number of custom indices, hitsound samples, and index changes."/>
@@ -43,10 +43,10 @@
                       ToolTip="Check this to automatically delete all files in the export folder before exporting. When using this be sure there aren't any important files in your export folder."/>
             <CheckBox Name="UsePreviousSampleSchemaBox" Content="Use previous sample schema" IsChecked="{Binding UsePreviousSampleSchema}"
                       ToolTip="Check this to use the same samples as the previous export."
-                      Visibility="{Binding SampleExportSettingsVisibility}"/>
+                      Visibility="{Binding AreSampleExportSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             <CheckBox Content="Allow growth of previous sample schema" IsChecked="{Binding AllowGrowthPreviousSampleSchema}"
                       IsEnabled="{Binding ElementName=UsePreviousSampleSchemaBox, Path=IsChecked}"
-                      Visibility="{Binding SampleExportSettingsVisibility}"
+                      Visibility="{Binding AreSampleExportSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="Alows expansion of the previous sample schema to always fit the need of the current export. If you dont check this, then the sample schema of this export needs to be a subset of the previous sample schema."/>
             <ComboBox Margin="0 20 0 0" ItemsSource="{Binding HitsoundExportModes}" SelectedItem="{Binding HitsoundExportModeSetting}"
                       Style="{StaticResource MaterialDesignFloatingHintComboBox}" materialDesign:HintAssist.Hint="Export mode"
@@ -54,7 +54,7 @@
             <TextBox Margin="0,5,0,0"
                      Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="Note grouping leniency"
                      ToolTip="Maximum time in millisecond that can be between two hitsounds while treated as being at the same time."
-                     Visibility="{Binding StandardExtraSettingsVisibility}">
+                     Visibility="{Binding IsStandardSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <TextBox.Text>
                     <Binding Path="ZipLayersLeniency" Mode="TwoWay" NotifyOnValidationError="True">
                         <Binding.Converter>
@@ -73,7 +73,7 @@
             <TextBox Margin="0,5,5,0"
                      Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="First custom index"
                      ToolTip="The index of the first custom index of custom indices that get generated."
-                     Visibility="{Binding StandardExtraSettingsVisibility}">
+                     Visibility="{Binding IsStandardSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                 <TextBox.Text>
                     <Binding Path="FirstCustomIndex" Mode="TwoWay" NotifyOnValidationError="True" ConverterParameter="1">
                         <Binding.Converter>
@@ -90,23 +90,23 @@
                 </TextBox.Text>
             </TextBox>
             <CheckBox Content="Add regular hitsounds" IsChecked="{Binding AddCoincidingRegularHitsounds}" Margin="0 5 0 0"
-                      Visibility="{Binding CoincidingExtraSettingsVisibility}"
+                      Visibility="{Binding IsCoincidingSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="Check this to add whistles, claps, finishes, and samplesets ontop of the filename hitsounding used by coinciding export."/>
             <CheckBox Content="Add green line volume" IsChecked="{Binding AddGreenLineVolumeToMidi}" Margin="0 5 0 0"
-                      Visibility="{Binding MidiExtraSettingsVisibility}"
+                      Visibility="{Binding IsMidiSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="Check this to add a track to the MIDI with volume changes from timing points."/>
             <ComboBox Margin="0 10 0 0" ItemsSource="{Binding HitsoundExportGameModes}" SelectedItem="{Binding HitsoundExportGameMode}"
                       Style="{StaticResource MaterialDesignFloatingHintComboBox}" materialDesign:HintAssist.Hint="Export gamemode"
-                      Visibility="{Binding SampleExportSettingsVisibility}"
+                      Visibility="{Binding AreSampleExportSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="Choose the gamemode for the exported hitsound map."/>
 
             <ComboBox Margin="0 15 0 0" ItemsSource="{Binding SampleExportFormatDisplayNames}" SelectedItem="{Binding SingleSampleExportFormatDisplay}"
                       Style="{StaticResource MaterialDesignFloatingHintComboBox}" materialDesign:HintAssist.Hint="Sample file format"
-                      Visibility="{Binding SampleExportSettingsVisibility}"
+                      Visibility="{Binding AreSampleExportSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="Choose the file format for exported sound samples. Default will match the encoding of the source files."/>
             <ComboBox Margin="0 5 0 0" ItemsSource="{Binding SampleExportFormatDisplayNames}" SelectedItem="{Binding MixedSampleExportFormatDisplay}"
                       Style="{StaticResource MaterialDesignFloatingHintComboBox}" materialDesign:HintAssist.Hint="Mixed sample file format"
-                      Visibility="{Binding SampleExportSettingsVisibility}"
+                      Visibility="{Binding AreSampleExportSettingsVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="Choose the file format for mixed exported sound samples. Mixing only occurs in the Standard hitsound export mode."/>
         </StackPanel>
 

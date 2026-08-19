@@ -14,6 +14,7 @@
         <domain:DoubleToStringConverter x:Key="DoubleToStringConverter"/>
         <domain:IntToStringConverter x:Key="IntToStringConverter"/>
         <domain:TimeToStringConverter x:Key="TimeToStringConverter"/>
+        <domain:DrawingColorToMediaColorConverter x:Key="DrawingColorConverter"/>
     </local:SingleRunMappingTool.Resources>
     <Grid Name="MasterGrid">
         <Grid.RowDefinitions>
@@ -196,14 +197,14 @@
                                 <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
                                     <ComboBox x:Name="SelectionComboColorBox" Cursor="Hand" Width="106" Margin="10,0,25,0"
                                               Style="{StaticResource MaterialDesignFloatingHintComboBox}" materialDesign:HintAssist.Hint="Track Color"
-                                              ItemsSource="{Binding AvailableColors}" SelectedItem="{Binding ComboColor}" Visibility="{Binding ShouldShowCcPicker}"
+                                              ItemsSource="{Binding AvailableColors}" SelectedItem="{Binding ComboColor}" Visibility="{Binding ShouldShowCcPicker, Converter={StaticResource BooleanToVisibilityConverter}}"
                                               ToolTip="Pick the combo color to be used in the picture.">
                                     </ComboBox>
-                                    <Rectangle Width="30" Height="30" Visibility="{Binding ShouldShowCCPicker}" Fill="{Binding PickedComboColor}" />
+                                    <Rectangle Width="30" Height="30" Visibility="{Binding ShouldShowCcPicker, Converter={StaticResource BooleanToVisibilityConverter}}" Fill="{Binding PickedComboColor}" />
                                 </StackPanel>
-                                <xctk:ColorPicker Grid.Row="1" Grid.Column="1" Name="ClrPckerTrack" SelectedColor="{Binding TrackColorPickerColor}" Visibility="{Binding ShouldShowPalette}" Margin="10,3,0,3"></xctk:ColorPicker>
+                                <xctk:ColorPicker Grid.Row="1" Grid.Column="1" Name="ClrPckerTrack" SelectedColor="{Binding TrackColorPickerColor, Converter={StaticResource DrawingColorConverter}}" Visibility="{Binding ShouldShowPalette, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="10,3,0,3"></xctk:ColorPicker>
                                 <TextBlock Grid.Row="2" Grid.Column="0" Text="Border Color:" VerticalAlignment="Center"/>
-                                <xctk:ColorPicker Grid.Row="2" Grid.Column="1" Name="ClrPckerBorder" SelectedColor="{Binding BorderColor}" Margin="10,3,0,3"></xctk:ColorPicker>
+                                <xctk:ColorPicker Grid.Row="2" Grid.Column="1" Name="ClrPckerBorder" SelectedColor="{Binding BorderColor, Converter={StaticResource DrawingColorConverter}}" Margin="10,3,0,3"></xctk:ColorPicker>
                             </Grid>
                         </StackPanel>
 

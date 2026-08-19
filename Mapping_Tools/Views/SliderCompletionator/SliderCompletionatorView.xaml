@@ -57,7 +57,7 @@
                             ItemsSource="{Binding ImportModes}" SelectedItem="{Binding ImportModeSetting}"
                             ToolTip="Choose how to select sliders to completionate.">
                         </ComboBox>
-                        <TextBox Margin="15 0 0 0" Width="258" Text="{Binding TimeCode}" Visibility="{Binding TimeCodeBoxVisibility}"
+                        <TextBox Margin="15 0 0 0" Width="258" Text="{Binding TimeCode}" Visibility="{Binding IsTimeCodeBoxVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                             Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="Time code"
                             ToolTip="Input a time code here. Example time code: 00:56:823 (1,2,1,2) - "/>
                     </StackPanel>
@@ -95,22 +95,22 @@
                     <TextBox x:Name="TemporalBox" Margin="0,20,0,0"
                          Text="{Binding Duration, Converter={StaticResource DoubleToStringConverter}, ConverterParameter=-1}"
                     Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="Duration (beats)"
-                         Visibility="{Binding DurationBoxVisibility}"
+                         Visibility="{Binding IsDurationBoxVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                          ToolTip="Wanted duration of the slider in beats. Input -1 for no change."/>
                     <TextBox x:Name="EndTimeBox" Margin="0,20,0,0"
                          Text="{Binding EndTime, Converter={StaticResource TimeToStringConverter}, ConverterParameter=-1}"
                     Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="End time (ms)"
-                         Visibility="{Binding EndTimeBoxVisibility}"
+                         Visibility="{Binding IsEndTimeBoxVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                          ToolTip="Wanted slider end time in milliseconds. Input -1 for no change. You can also input osu! timestamps like '00:56:823'."/>
                     <TextBox x:Name="SpatialBox" Margin="0,20,0,0"
                          Text="{Binding Length, Converter={StaticResource DoubleToStringConverter}, ConverterParameter=-1}"
                     Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="Length (fraction of full path)"
-                         Visibility="{Binding LengthBoxVisibility}"
+                         Visibility="{Binding IsLengthBoxVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                          ToolTip="Wanted length of the slider. This value represents a fraction of the complete path defined by the anchors, so '1' lets the slider end be exactly on the last anchor."/>
                     <TextBox x:Name="VelocityBox" Margin="0,20,0,0"
                          Text="{Binding SliderVelocity, Converter={StaticResource DoubleToStringConverter}, ConverterParameter=-1}"
                     Style="{StaticResource MaterialDesignFloatingHintTextBox}" materialDesign:HintAssist.Hint="Slider velocity multiplier"
-                         Visibility="{Binding VelocityBoxVisibility}"
+                         Visibility="{Binding IsVelocityBoxVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
                          ToolTip="Wanted slider velocity multiplier of the inherited timing point. Input -1 for no change."/>
 
                 </StackPanel>

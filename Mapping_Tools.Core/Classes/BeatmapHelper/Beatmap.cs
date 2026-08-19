@@ -731,7 +731,7 @@ namespace Mapping_Tools.Classes.BeatmapHelper {
             }));
             if (Version < 128)
                 lines.Add("");
-            if (ComboColours.Any()) {
+            if (ComboColours.Any() || SpecialColours.Any()) {
                 lines.Add("");
                 lines.Add("[Colours]");
                 lines.AddRange(ComboColours.Select((t, i) => "Combo" + (i + 1) + (Version < 128 ? " : " : ": ") + t));

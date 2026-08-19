@@ -1,0 +1,57 @@
+<views:MappingTool xmlns="https://github.com/avaloniaui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                   xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                   xmlns:c="clr-namespace:Mapping_Tools.Components"
+                   xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                   x:Class="Mapping_Tools.Avalonia.Views.Preferences.PreferencesView">
+    <views:MappingTool.Resources>
+        <domain:IntToStringConverter x:Key="IntConverter"/>
+    </views:MappingTool.Resources>
+    <ScrollViewer>
+        <StackPanel Margin="24" MaxWidth="800" HorizontalAlignment="Left">
+            <TextBlock Text="Preferences" FontSize="32" FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+
+            <TextBlock Text="Files and folders" FontSize="20" FontWeight="SemiBold" Margin="0,24,0,8"/>
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                <TextBox Text="{Binding OsuPath}" PlaceholderText="osu! folder" MinWidth="420"/>
+                <Button Grid.Column="1" Margin="8,0,0,0" Theme="{StaticResource IconButton}"
+                        Click="BrowseOsu_Click" ToolTip.Tip="Choose the osu! installation folder">
+                    <icons:MaterialIcon Kind="Folder" Width="24" Height="24"/>
+                </Button>
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                <TextBox Text="{Binding SongsPath}" PlaceholderText="Songs folder"/>
+                <Button Grid.Column="1" Margin="8,0,0,0" Theme="{StaticResource IconButton}"
+                        Click="BrowseSongs_Click" ToolTip.Tip="Choose the osu! Songs folder">
+                    <icons:MaterialIcon Kind="Folder" Width="24" Height="24"/>
+                </Button>
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                <TextBox Text="{Binding BackupsPath}" PlaceholderText="Backups folder"/>
+                <Button Grid.Column="1" Margin="8,0,0,0" Theme="{StaticResource IconButton}"
+                        Click="BrowseBackups_Click" ToolTip.Tip="Choose where map backups are stored">
+                    <icons:MaterialIcon Kind="Folder" Width="24" Height="24"/>
+                </Button>
+            </Grid>
+            <TextBox Text="{Binding OsuConfigPath}"
+                     PlaceholderText="osu! user config file (optional)"/>
+
+            <TextBlock Text="Backups" FontSize="20" FontWeight="SemiBold" Margin="0,24,0,8"/>
+            <CheckBox Content="Make automatic backups" IsChecked="{Binding MakeBackups}"/>
+            <c:ValidatedTextBox Width="180" HorizontalAlignment="Left" Margin="0,8,0,0"
+                                Value="{Binding MaxBackupFiles}" Converter="{StaticResource IntConverter}"
+                                PlaceholderText="Maximum backup files"/>
+
+            <TextBlock Text="Appearance" FontSize="20" FontWeight="SemiBold" Margin="0,24,0,8"/>
+            <CheckBox Content="Use dark theme" IsChecked="{Binding DarkTheme}"/>
+
+            <TextBlock Text="Editor integration" FontSize="20" FontWeight="SemiBold" Margin="0,24,0,8"/>
+            <CheckBox Content="Enable Editor Reader" IsChecked="False" IsEnabled="False"/>
+            <CheckBox Content="Auto reload after Quick Run" IsChecked="False" IsEnabled="False"/>
+            <TextBlock Margin="24,4,0,0" Opacity="0.65" TextWrapping="Wrap"
+                       Text="Editor Reader and Quick Run are intentionally unavailable in this Linux port."/>
+        </StackPanel>
+    </ScrollViewer>
+</views:MappingTool>

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using Mapping_Tools.Classes.MathUtil;
 using Mapping_Tools.Classes.SystemTools;
 using Mapping_Tools.Classes.Tools.TumourGenerating.Enums;
@@ -8,6 +7,7 @@ using Mapping_Tools.Classes.Tools.TumourGenerating.Options.TumourTemplates;
 using Mapping_Tools.Components.Domain;
 using Mapping_Tools.Components.Graph;
 using Mapping_Tools.Components.Graph.Interpolation.Interpolators;
+using Newtonsoft.Json;
 
 namespace Mapping_Tools.Classes.Tools.TumourGenerating.Options {
     public class TumourLayer : BindableBase, ITumourLayer {
@@ -85,6 +85,48 @@ namespace Mapping_Tools.Classes.Tools.TumourGenerating.Options {
             get => tumourDistance;
             set => Set(ref tumourDistance, value);
         }
+
+        [JsonIgnore]
+        public double TumourLengthValue {
+            get => TumourLength?.GetValue(0) ?? 0;
+            set => TumourLength = GetGraphState(value);
+        }
+
+        [JsonIgnore]
+        public double TumourScaleValue {
+            get => TumourScale?.GetValue(0) ?? 0;
+            set => TumourScale = GetGraphState(value);
+        }
+
+        [JsonIgnore]
+        public double TumourRotationValue {
+            get => TumourRotation?.GetValue(0) ?? 0;
+            set => TumourRotation = GetGraphState(value);
+        }
+
+        [JsonIgnore]
+        public double TumourParameterValue {
+            get => TumourParameter?.GetValue(0) ?? 0;
+            set => TumourParameter = GetGraphState(value);
+        }
+
+        [JsonIgnore]
+        public double TumourDistanceValue {
+            get => TumourDistance?.GetValue(0) ?? 0;
+            set => TumourDistance = GetGraphState(value);
+        }
+
+        [JsonIgnore]
+        public IEnumerable<TumourTemplate> TumourTemplates =>
+            Enum.GetValues(typeof(TumourTemplate)) as TumourTemplate[];
+
+        [JsonIgnore]
+        public IEnumerable<WrappingMode> WrappingModes =>
+            Enum.GetValues(typeof(WrappingMode)) as WrappingMode[];
+
+        [JsonIgnore]
+        public IEnumerable<TumourSidedness> TumourSides =>
+            Enum.GetValues(typeof(TumourSidedness)) as TumourSidedness[];
 
         public int TumourCount {
             get => tumourCount;

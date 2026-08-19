@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows;
 using Mapping_Tools.Classes.SystemTools;
 using Newtonsoft.Json;
 
@@ -21,7 +20,7 @@ namespace Mapping_Tools.Viewmodels {
             get => importModeSetting;
             set {
                 if (Set(ref importModeSetting, value)) {
-                    RaisePropertyChanged(nameof(TimeCodeBoxVisibility));
+                    RaisePropertyChanged(nameof(IsTimeCodeBoxVisible));
                 }
             }
         }
@@ -30,7 +29,7 @@ namespace Mapping_Tools.Viewmodels {
         public IEnumerable<ImportMode> ImportModes => Enum.GetValues(typeof(ImportMode)).Cast<ImportMode>();
 
         [JsonIgnore]
-        public Visibility TimeCodeBoxVisibility => ImportModeSetting == ImportMode.Time ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsTimeCodeBoxVisible => ImportModeSetting == ImportMode.Time;
 
         private string timeCode;
         public string TimeCode {

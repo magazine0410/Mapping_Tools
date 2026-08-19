@@ -1,0 +1,53 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.AutoFailDetector.AutoFailDetectorView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:DoubleToStringConverter x:Key="DoubleConverter"/>
+        <domain:IntToStringConverter x:Key="IntConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="*,Auto">
+        <ScrollViewer>
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="7">
+                    <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+                    <CheckBox Content="Show unloading hit objects" IsChecked="{Binding ShowUnloadingObjects}" Margin="0,12,0,0"/>
+                    <CheckBox Content="Show potential unloading hit objects" IsChecked="{Binding ShowPotentialUnloadingObjects}"/>
+                    <CheckBox Content="Show disrupting hit objects" IsChecked="{Binding ShowPotentialDisruptors}"/>
+                    <CheckBox Content="Get auto-fail fix guide" IsChecked="{Binding GetAutoFailFix}"/>
+                    <CheckBox Content="Auto-insert fix spinners" IsChecked="{Binding AutoPlaceFix}" IsEnabled="{Binding GetAutoFailFix}"/>
+                    <c:ValidatedTextBox Width="280" HorizontalAlignment="Left" Value="{Binding ApproachRateOverride}"
+                                        Converter="{StaticResource DoubleConverter}" ConverterParameter="-1" PlaceholderText="AR override (-1: map value)"/>
+                    <c:ValidatedTextBox Width="280" HorizontalAlignment="Left" Value="{Binding OverallDifficultyOverride}"
+                                        Converter="{StaticResource DoubleConverter}" ConverterParameter="-1" PlaceholderText="OD override (-1: map value)"/>
+                    <c:ValidatedTextBox Width="280" HorizontalAlignment="Left" Value="{Binding PhysicsUpdateLeniency}"
+                                        Converter="{StaticResource IntConverter}" ConverterParameter="9" PlaceholderText="Physics update leniency">
+                        <domain:IsGreaterOrEqualRule Value="0"/>
+                    </c:ValidatedTextBox>
+                    <Border IsVisible="{Binding #This.HasAnalysis}" Background="{DynamicResource MaterialDesignCardBackground}" CornerRadius="5" Padding="12" Margin="0,12,0,0">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Last analysis" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding #This.AnalysisSummary}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding #This.UnloadingSummary}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding #This.PotentialSummary}" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding #This.DisruptorSummary}" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+                <Button Grid.Column="1" VerticalAlignment="Bottom" Margin="10"
+                        Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                        IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                    <icons:MaterialIcon Kind="Play" Height="30" Width="30"/>
+                </Button>
+            </Grid>
+        </ScrollViewer>
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <TextBlock Text="Made by OliBomby &amp; Karoo" FontWeight="Bold" Opacity="0.58"/>
+            <ProgressBar Grid.Column="1" Margin="20,0" Height="20" Value="{Binding #This.Progress}"/>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

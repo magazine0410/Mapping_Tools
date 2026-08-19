@@ -21,6 +21,7 @@
     <PackageReference Include="NVorbis" Version="0.10.3" />
     <PackageReference Include="OggVorbisEncoder" Version="1.2.0" />
     <PackageReference Include="NLayer" Version="1.16.0" />
+    <PackageReference Include="SkiaSharp" Version="3.119.4" />
   </ItemGroup>
 
 </Project>

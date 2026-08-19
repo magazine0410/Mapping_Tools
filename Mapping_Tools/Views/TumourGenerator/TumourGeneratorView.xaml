@@ -342,7 +342,7 @@
                     <ComboBox x:Name="SelectionModeBox" Grid.Column="0" ItemsSource="{Binding ImportModes}" SelectedItem="{Binding ImportModeSetting}" Margin="0 0 5 0" VerticalAlignment="Top"
                                   ToolTip="Slider selection mode. Choose which sliders should be targeted by Tumour Generator 2."/>
 
-                    <TextBox Grid.Column="1" Text="{Binding TimeCode}" Visibility="{Binding TimeCodeBoxVisibility}" Margin="5 0 5 2" Width="100" VerticalAlignment="Top"
+                    <TextBox Grid.Column="1" Text="{Binding TimeCode}" Visibility="{Binding IsTimeCodeBoxVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="5 0 5 2" Width="100" VerticalAlignment="Top"
                                  materialDesign:HintAssist.Hint="Time code"
                                  ToolTip="Input a time code here. Example time code: 00:56:823 (1) - "/>
 

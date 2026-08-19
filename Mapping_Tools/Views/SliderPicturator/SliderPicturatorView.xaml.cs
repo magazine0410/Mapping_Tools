@@ -36,6 +36,7 @@ namespace Mapping_Tools.Views.SliderPicturator {
             Height = MainWindow.AppWindow.ContentViews.Height;
             DataContext = new SliderPicturatorVm();
             ProjectManager.LoadProject(this, message: false);
+            ViewModel.BrowseImageRequested = BrowseImage;
         }
 
         public SliderPicturatorVm ViewModel => (SliderPicturatorVm) DataContext;
@@ -70,6 +71,13 @@ namespace Mapping_Tools.Views.SliderPicturator {
         }
 
         private string Picturate(SliderPicturatorVm arg, BackgroundWorker worker, DoWorkEventArgs _) {
+            string result = global::Mapping_Tools.Classes.Tools.SliderPicturatorRunner
+                .Picturate(arg, worker);
+            RunFinished?.Invoke(this, new RunToolCompletedEventArgs(true,
+                global::Mapping_Tools.Classes.SystemTools.Platform.CorePlatform.EditorReader.IsAvailable,
+                arg.Quick));
+            return arg.Quick ? string.Empty : result;
+#if false
             if (arg.PictureFile == null) {
                 throw new Exception("No image file selected.");
             }
@@ -225,6 +233,15 @@ namespace Mapping_Tools.Views.SliderPicturator {
             // Do stuff
             RunFinished?.Invoke(this, new RunToolCompletedEventArgs(true, reader != null, arg.Quick));
             return arg.Quick ? "" : "Done!";
+#endif
+        }
+
+        private void BrowseImage() {
+            var dialog = new Microsoft.Win32.OpenFileDialog {
+                Title = "Select an image",
+                Filter = "Image files|*.bmp;*.jpg;*.jpeg;*.png;*.gif;*.tif;*.tiff;*.ico|All files|*.*"
+            };
+            if (dialog.ShowDialog() == true) ViewModel.PictureFile = dialog.FileName;
         }
         public SliderPicturatorVm GetSaveData() {
             return ViewModel;

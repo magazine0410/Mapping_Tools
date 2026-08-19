@@ -1,0 +1,175 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.PropertyTransformer.PropertyTransformerView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:DoubleToStringConverter x:Key="DoubleConverter"/>
+        <domain:DoubleArrayToStringConverter x:Key="DoubleArrayConverter"/>
+        <domain:TimeToStringConverter x:Key="TimeConverter"/>
+    </views:SingleRunMappingTool.Resources>
+
+    <Grid Margin="20" RowDefinitions="*,Auto">
+        <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0">
+                    <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+
+                    <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="24">
+                        <StackPanel Grid.Column="0" Spacing="10">
+                            <GroupBox Header="Timing points">
+                                <StackPanel Spacing="4">
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Offset" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" x:Name="TpOffsetMultiplierBox" Value="{Binding TimingpointOffsetMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding TimingpointOffsetOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="BPM" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding TimingpointBpmMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding TimingpointBpmOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Slider velocity" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding TimingpointSvMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding TimingpointSvOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Custom index" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding TimingpointIndexMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding TimingpointIndexOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Volume" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding TimingpointVolumeMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding TimingpointVolumeOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                </StackPanel>
+                            </GroupBox>
+
+                            <GroupBox Header="Storyboard">
+                                <StackPanel Spacing="4">
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Event time" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding SbEventTimeMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding SbEventTimeOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Sample time" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding SbSampleTimeMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding SbSampleTimeOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Sample volume" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding SbSampleVolumeMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding SbSampleVolumeOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                </StackPanel>
+                            </GroupBox>
+
+                            <CheckBox Content="Synchronize time fields" IsChecked="{Binding SyncTimeFields}"/>
+                            <Button HorizontalAlignment="Left" Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}"
+                                    ToolTip.Tip="Reset all multipliers and offsets." Command="{Binding ResetCommand}">
+                                <icons:MaterialIcon Kind="Rocket" Height="24" Width="24"/>
+                            </Button>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Spacing="10">
+                            <GroupBox Header="Other">
+                                <StackPanel Spacing="4">
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Hit object time" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding HitObjectTimeMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding HitObjectTimeOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Hit object volume" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding HitObjectVolumeMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding HitObjectVolumeOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Bookmark time" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding BookmarkTimeMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding BookmarkTimeOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Break time" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding BreakTimeMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding BreakTimeOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Video time" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding VideoTimeMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding VideoTimeOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                    <Grid ColumnDefinitions="150,18,120,18,120">
+                                        <TextBlock Text="Preview time" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="×" VerticalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="2" Value="{Binding PreviewTimeMultiplier}" Converter="{StaticResource DoubleConverter}" ConverterParameter="1"/>
+                                        <TextBlock Grid.Column="3" Text="+" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        <c:ValidatedTextBox Grid.Column="4" Value="{Binding PreviewTimeOffset}" Converter="{StaticResource DoubleConverter}" ConverterParameter="0"/>
+                                    </Grid>
+                                </StackPanel>
+                            </GroupBox>
+
+                            <CheckBox Content="Clip properties" IsChecked="{Binding ClipProperties}"
+                                      ToolTip.Tip="Keep transformed values within valid osu! bounds."/>
+                            <CheckBox Content="Enable filters" IsChecked="{Binding EnableFilters}"/>
+                            <StackPanel IsVisible="{Binding EnableFilters}" Spacing="6">
+                                <c:ValidatedTextBox Value="{Binding MatchFilter}" Converter="{StaticResource DoubleArrayConverter}" ConverterParameter="-1" PlaceholderText="Whitelist"/>
+                                <c:ValidatedTextBox Value="{Binding UnmatchFilter}" Converter="{StaticResource DoubleArrayConverter}" ConverterParameter="-1" PlaceholderText="Blacklist"/>
+                                <Grid ColumnDefinitions="*,Auto,*">
+                                    <c:ValidatedTextBox Value="{Binding MinTimeFilter}" Converter="{StaticResource TimeConverter}" ConverterParameter="-1" PlaceholderText="Start time"/>
+                                    <TextBlock Grid.Column="1" Text="to" Margin="8,0" VerticalAlignment="Center"/>
+                                    <c:ValidatedTextBox Grid.Column="2" Value="{Binding MaxTimeFilter}" Converter="{StaticResource TimeConverter}" ConverterParameter="-1" PlaceholderText="End time"/>
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+
+                <Button Grid.Column="1" x:Name="RunButton" VerticalAlignment="Bottom"
+                        HorizontalAlignment="Right" Margin="10"
+                        Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                        IsEnabled="{Binding #This.CanRun}" Click="Start_Click"
+                        ToolTip.Tip="Run this tool.">
+                    <icons:MaterialIcon Kind="Play" Height="30" Width="30"/>
+                </Button>
+            </Grid>
+        </ScrollViewer>
+
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <TextBlock Text="Made by OliBomby" FontWeight="Bold" Opacity="0.58"/>
+            <ProgressBar Grid.Column="1" Margin="20,0" Height="20" Value="{Binding #This.Progress}"/>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

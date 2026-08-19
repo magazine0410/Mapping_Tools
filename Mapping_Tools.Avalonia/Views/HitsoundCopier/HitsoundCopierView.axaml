@@ -1,0 +1,90 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.HitsoundCopier.HitsoundCopierView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:MapPathStringToCountStringConverter x:Key="PathCountConverter"/>
+        <domain:DoubleToStringConverter x:Key="DoubleConverter"/>
+        <domain:IntToStringConverter x:Key="IntConverter"/>
+        <domain:BeatDivisorArrayToStringConverter x:Key="BeatDivisorConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="*,Auto">
+        <ScrollViewer>
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="7">
+                    <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+                    <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,12,0,0">
+                        <TextBox Text="{Binding PathFrom}" PlaceholderText="Copy hitsounds from"/>
+                        <Button Grid.Column="1" Theme="{StaticResource IconButton}" Command="{Binding ImportLoadCommand}">
+                            <icons:MaterialIcon Kind="RestoreFromTrash" Width="26" Height="26"/>
+                        </Button>
+                        <Button Grid.Column="2" Theme="{StaticResource IconButton}" Command="{Binding ImportBrowseCommand}">
+                            <icons:MaterialIcon Kind="Folder" Width="26" Height="26"/>
+                        </Button>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto">
+                        <TextBox x:Name="BeatmapToBox" Text="{Binding PathTo}" PlaceholderText="Copy hitsounds to (separate paths with |)"/>
+                        <TextBlock Grid.Column="1" Margin="8,0" VerticalAlignment="Center" Text="{Binding #BeatmapToBox.Text, Converter={StaticResource PathCountConverter}}"/>
+                        <Button Grid.Column="2" Theme="{StaticResource IconButton}" Command="{Binding ExportLoadCommand}">
+                            <icons:MaterialIcon Kind="RestoreFromTrash" Width="26" Height="26"/>
+                        </Button>
+                        <Button Grid.Column="3" Theme="{StaticResource IconButton}" Command="{Binding ExportBrowseCommand}">
+                            <icons:MaterialIcon Kind="Folder" Width="26" Height="26"/>
+                        </Button>
+                    </Grid>
+                    <ComboBox SelectedIndex="{Binding CopyMode}" PlaceholderText="Copying mode">
+                        <ComboBoxItem Content="Overwrite everything"/>
+                        <ComboBoxItem Content="Overwrite only defined"/>
+                    </ComboBox>
+                    <c:ValidatedTextBox x:Name="LeniencyBox" Value="{Binding TemporalLeniency}"
+                                        Converter="{StaticResource DoubleConverter}" ConverterParameter="5"
+                                        PlaceholderText="Temporal leniency in milliseconds">
+                        <domain:IsGreaterOrEqualRule Value="0"/>
+                    </c:ValidatedTextBox>
+                    <CheckBox Content="Copy hitsounds" IsChecked="{Binding CopyHitsounds}"/>
+                    <CheckBox Content="Copy slider body hitsounds" IsChecked="{Binding CopyBodyHitsounds}"/>
+                    <CheckBox Content="Copy sample sets" IsChecked="{Binding CopySampleSets}"/>
+                    <CheckBox x:Name="CopyVolumesBox" Content="Copy volumes" IsChecked="{Binding CopyVolumes}"/>
+                    <CheckBox Margin="20,0,0,0" Content="Always preserve 5% volume" IsChecked="{Binding AlwaysPreserve5Volume}" IsVisible="{Binding CopyVolumes}"/>
+                    <CheckBox Content="Copy storyboarded samples" IsChecked="{Binding CopyStoryboardedSamples}"/>
+                    <StackPanel Margin="20,0,0,0" IsVisible="{Binding CopyStoryboardedSamples}">
+                        <CheckBox Content="Ignore samples satisfied by hitsounds" IsChecked="{Binding IgnoreHitsoundSatisfiedSamples}"/>
+                        <CheckBox Content="Ignore samples whenever there is any hitsound" IsChecked="{Binding IgnoreWheneverHitsound}"/>
+                    </StackPanel>
+                    <CheckBox Content="Copy unmatched sounds to slider ticks" IsChecked="{Binding CopyToSliderTicks}" IsEnabled="{Binding SmartCopyModeSelected}"/>
+                    <CheckBox Content="Copy unmatched sounds to slider slides" IsChecked="{Binding CopyToSliderSlides}" IsEnabled="{Binding SmartCopyModeSelected}"/>
+                    <c:ValidatedTextBox Width="260" HorizontalAlignment="Left" IsVisible="{Binding StartIndexBoxVisible}"
+                                        IsEnabled="{Binding SmartCopyModeSelected}" Value="{Binding StartIndex}"
+                                        Converter="{StaticResource IntConverter}" ConverterParameter="100"
+                                        PlaceholderText="Generated sample start index"/>
+                    <CheckBox Content="Mute slider and spinner ends" IsChecked="{Binding MuteSliderends}"/>
+                    <StackPanel Margin="20,0,0,0" Spacing="6" IsVisible="{Binding MuteSliderends}">
+                        <TextBlock Text="Slider-end muting filter" FontWeight="Bold"/>
+                        <Grid ColumnDefinitions="*,8,*">
+                            <c:ValidatedTextBox Value="{Binding BeatDivisors}" Converter="{StaticResource BeatDivisorConverter}" PlaceholderText="All beat divisors"/>
+                            <c:ValidatedTextBox Grid.Column="2" Value="{Binding MutedDivisors}" Converter="{StaticResource BeatDivisorConverter}" PlaceholderText="Muted beat divisors"/>
+                        </Grid>
+                        <c:ValidatedTextBox Value="{Binding MinLength}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Minimum duration in beats"/>
+                        <Grid ColumnDefinitions="*,8,160">
+                            <c:ValidatedTextBox Value="{Binding MutedIndex}" Converter="{StaticResource IntConverter}" ConverterParameter="-1" PlaceholderText="Muted custom index (-1: keep)"/>
+                            <ComboBox Grid.Column="2" ItemsSource="{Binding MutedSampleSets}" SelectedItem="{Binding MutedSampleSet}" PlaceholderText="Muted sample set"/>
+                        </Grid>
+                    </StackPanel>
+                </StackPanel>
+                <Button Grid.Column="1" VerticalAlignment="Bottom" Margin="10"
+                        Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                        IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                    <icons:MaterialIcon Kind="Play" Height="30" Width="30"/>
+                </Button>
+            </Grid>
+        </ScrollViewer>
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*" Margin="0,10,0,0">
+            <TextBlock Text="Made by OliBomby" FontWeight="Bold" Opacity="0.58"/>
+            <ProgressBar Grid.Column="1" Margin="20,0" Height="20" Value="{Binding #This.Progress}"/>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

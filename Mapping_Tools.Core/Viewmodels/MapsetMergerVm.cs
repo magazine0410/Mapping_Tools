@@ -40,7 +40,13 @@ namespace Mapping_Tools.Viewmodels {
                     }
                 }
 
-                var dir = Directory.GetParent(path);
+                if (string.IsNullOrEmpty(path)) {
+                    path = CorePlatform.FileDialogs.FolderDialog();
+                }
+                var dir = string.IsNullOrEmpty(path)
+                    ? null
+                    : File.Exists(path) ? Directory.GetParent(path) : new DirectoryInfo(path);
+                if (dir is null || !dir.Exists) return;
                 string folderPath = dir.FullName;
                 string name = dir.Name;
 

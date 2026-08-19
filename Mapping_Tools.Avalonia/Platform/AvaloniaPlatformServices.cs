@@ -23,6 +23,7 @@ namespace Mapping_Tools.Avalonia.Platform {
             CorePlatform.Paths = new AvaloniaAppPaths();
             CorePlatform.FileDialogs = new AvaloniaFileDialogService();
             CorePlatform.Shell = new DesktopShellService();
+            CorePlatform.Audio = new DesktopAudioPlaybackService();
             // The editor reader needs the memory of the osu! process. There is no
             // implementation for Linux, so the core reads the file on disk instead.
             CorePlatform.EditorReader = new NullEditorReaderService();
@@ -152,6 +153,125 @@ namespace Mapping_Tools.Avalonia.Platform {
             var startInfo = new ProcessStartInfo(opener) { UseShellExecute = false };
             startInfo.ArgumentList.Add(path);
             return startInfo;
+        }
+    }
+
+    /// <summary>
+    /// Plays WAV previews through an installed desktop audio utility. Linux desktop
+    /// environments normally provide one of these; ffplay is also available on macOS
+    /// and Windows when FFmpeg is installed.
+    /// </summary>
+    public class DesktopAudioPlaybackService : IAudioPlaybackService {
+        private readonly object sync = new();
+        private Process process;
+        private string ownedFile;
+        private readonly string player = FindPlayer();
+
+        public bool IsAvailable => player is not null;
+
+        public void PlayFile(string path, bool deleteWhenFinished = false) {
+            if (!File.Exists(path)) throw new FileNotFoundException("Audio preview not found.", path);
+            if (!IsAvailable) {
+                if (deleteWhenFinished) File.Delete(path);
+                throw new InvalidOperationException(
+                    "No supported audio player was found (ffplay, pw-play, paplay, or aplay).");
+            }
+
+            lock (sync) {
+                StopLocked();
+                var startInfo = new ProcessStartInfo(player) {
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                switch (Path.GetFileName(player)) {
+                    case "ffplay":
+                    case "ffplay.exe":
+                        startInfo.ArgumentList.Add("-nodisp");
+                        startInfo.ArgumentList.Add("-autoexit");
+                        startInfo.ArgumentList.Add("-loglevel");
+                        startInfo.ArgumentList.Add("quiet");
+                        break;
+                    case "aplay":
+                        startInfo.ArgumentList.Add("-q");
+                        break;
+                }
+                startInfo.ArgumentList.Add(path);
+                string fileToDelete = deleteWhenFinished ? path : null;
+                var started = Process.Start(startInfo) ??
+                    throw new InvalidOperationException("The audio player could not be started.");
+                process = started;
+                ownedFile = fileToDelete;
+                // Subscribe before the event is armed. Arming it first lets a player
+                // that exits at once raise Exited with nobody listening, and then the
+                // temporary file is never removed.
+                started.Exited += (_, _) => {
+                    lock (sync) {
+                        if (ReferenceEquals(process, started)) {
+                            process = null;
+                            ownedFile = null;
+                        }
+                        started.Dispose();
+                        DeleteFile(fileToDelete);
+                    }
+                };
+                started.EnableRaisingEvents = true;
+
+                // The player can be gone already, before the event was armed.
+                if (started.HasExited) {
+                    lock (sync) {
+                        if (ReferenceEquals(process, started)) {
+                            process = null;
+                            ownedFile = null;
+                        }
+                        DeleteFile(fileToDelete);
+                    }
+                }
+            }
+        }
+
+        public void Stop() {
+            lock (sync) StopLocked();
+        }
+
+        private void StopLocked() {
+            if (process is not null) {
+                try {
+                    if (!process.HasExited) process.Kill(entireProcessTree: true);
+                } catch (InvalidOperationException) { }
+                process.Dispose();
+                process = null;
+            }
+            DeleteOwnedFile();
+        }
+
+        private void DeleteOwnedFile() {
+            DeleteFile(ownedFile);
+            ownedFile = null;
+        }
+
+        private static void DeleteFile(string path) {
+            if (path is not null && File.Exists(path)) {
+                try { File.Delete(path); } catch (IOException) { }
+            }
+        }
+
+        private static string FindPlayer() {
+            string[] names = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? new[] { "ffplay.exe" }
+                : new[] { "ffplay", "pw-play", "paplay", "aplay" };
+            string[] directories = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+                .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+            // Names on the outside, so the order of "names" is the order of preference.
+            // The other way round, the first folder on the PATH decides, and a box with
+            // aplay in /usr/bin never reaches ffplay in /usr/local/bin.
+            foreach (string name in names) {
+                foreach (string directory in directories) {
+                    string candidate = Path.Combine(directory, name);
+                    if (File.Exists(candidate)) return candidate;
+                }
+            }
+            return null;
         }
     }
 

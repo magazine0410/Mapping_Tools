@@ -1,0 +1,109 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            xmlns:local="clr-namespace:Mapping_Tools.Avalonia.Views.TumourGenerator"
+                            x:Class="Mapping_Tools.Avalonia.Views.TumourGenerator.TumourGeneratorView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:DoubleToStringConverter x:Key="DoubleConverter"/>
+        <domain:IntToStringConverter x:Key="IntConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+        <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+        <Grid Grid.Row="1" ColumnDefinitions="310,*" ColumnSpacing="18" Margin="0,14,0,0">
+            <Grid RowDefinitions="Auto,Auto,*,Auto">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <ComboBox ItemsSource="{Binding ImportModes}" SelectedItem="{Binding ImportModeSetting}"
+                              PlaceholderText="Object selection mode"/>
+                    <TextBox Grid.Column="1" Text="{Binding TimeCode}" IsVisible="{Binding IsTimeCodeBoxVisible}"
+                             PlaceholderText="Time code"/>
+                </Grid>
+                <Button Grid.Row="1" Margin="0,8,0,0" Content="Import preview slider"
+                        Command="{Binding ImportCommand}" HorizontalAlignment="Left"/>
+                <ListBox Grid.Row="2" Margin="0,12,0,0" ItemsSource="{Binding TumourLayers}"
+                         SelectedItem="{Binding CurrentLayer}" SelectedIndex="{Binding CurrentLayerIndex}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="Auto,*" Margin="4">
+                                <CheckBox IsChecked="{Binding IsActive}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Name}" Margin="8,0"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
+                    <Button Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding AddCommand}">
+                        <icons:MaterialIcon Kind="Plus" Width="22" Height="22"/>
+                    </Button>
+                    <Button Margin="6,0" Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding CopyCommand}">
+                        <icons:MaterialIcon Kind="ContentCopy" Width="22" Height="22"/>
+                    </Button>
+                    <Button Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding RemoveCommand}">
+                        <icons:MaterialIcon Kind="Minus" Width="22" Height="22"/>
+                    </Button>
+                    <Button Margin="6,0" Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding LowerCommand}">
+                        <icons:MaterialIcon Kind="ArrowUp" Width="22" Height="22"/>
+                    </Button>
+                    <Button Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding RaiseCommand}">
+                        <icons:MaterialIcon Kind="ArrowDown" Width="22" Height="22"/>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <ScrollViewer Grid.Column="1">
+                <StackPanel>
+                    <Border BorderBrush="{DynamicResource MaterialDesignDivider}" BorderThickness="1" CornerRadius="6">
+                        <local:SliderPreviewControl Height="250" Original="{Binding PreviewHitObject}"
+                                                    Generated="{Binding TumouredPreviewHitObject}"/>
+                    </Border>
+                    <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsProcessingPreview}" Height="4"/>
+                    <TextBlock Text="Gray: source slider   Blue: generated slider" Opacity="0.65" Margin="0,4,0,12"/>
+
+                    <Grid DataContext="{Binding CurrentLayer}" ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                          RowSpacing="8" ColumnSpacing="12">
+                        <TextBlock Text="Layer name" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" Text="Template" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="2" Text="Wrapping" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="3" Text="Side" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="4" Text="Tumour count (0 = auto)" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="5" Text="Range start" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="6" Text="Range end" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="7" Text="Length" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="8" Text="Scale" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="9" Text="Rotation" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="10" Text="Shape parameter" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="11" Text="Distance" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Name}"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding TumourTemplates}" SelectedItem="{Binding TumourTemplateEnum}"/>
+                        <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding WrappingModes}" SelectedItem="{Binding WrappingMode}"/>
+                        <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding TumourSides}" SelectedItem="{Binding TumourSidedness}"/>
+                        <c:ValidatedTextBox Grid.Row="4" Grid.Column="1" Value="{Binding TumourCount}" Converter="{StaticResource IntConverter}"/>
+                        <c:ValidatedTextBox Grid.Row="5" Grid.Column="1" Value="{Binding TumourStart}" Converter="{StaticResource DoubleConverter}"/>
+                        <c:ValidatedTextBox Grid.Row="6" Grid.Column="1" Value="{Binding TumourEnd}" Converter="{StaticResource DoubleConverter}"/>
+                        <c:ValidatedTextBox Grid.Row="7" Grid.Column="1" Value="{Binding TumourLengthValue}" Converter="{StaticResource DoubleConverter}"/>
+                        <c:ValidatedTextBox Grid.Row="8" Grid.Column="1" Value="{Binding TumourScaleValue}" Converter="{StaticResource DoubleConverter}"/>
+                        <c:ValidatedTextBox Grid.Row="9" Grid.Column="1" Value="{Binding TumourRotationValue}" Converter="{StaticResource DoubleConverter}"/>
+                        <c:ValidatedTextBox Grid.Row="10" Grid.Column="1" Value="{Binding TumourParameterValue}" Converter="{StaticResource DoubleConverter}"/>
+                        <c:ValidatedTextBox Grid.Row="11" Grid.Column="1" Value="{Binding TumourDistanceValue}" Converter="{StaticResource DoubleConverter}"/>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                        <CheckBox Content="Middle anchors only" IsChecked="{Binding JustMiddleAnchors}"/>
+                        <CheckBox Margin="18,0,0,0" Content="Fix slider velocity" IsChecked="{Binding FixSv}"/>
+                        <CheckBox Margin="18,0,0,0" Content="Delegate SV to BPM" IsChecked="{Binding DelegateToBpm}"/>
+                        <CheckBox Margin="18,0,0,0" Content="Remove ticks" IsChecked="{Binding RemoveSliderTicks}"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+            <ProgressBar Value="{Binding #This.Progress}" Height="10" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Margin="16,0,0,0" Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                    IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                <icons:MaterialIcon Kind="Play" Width="30" Height="30"/>
+            </Button>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

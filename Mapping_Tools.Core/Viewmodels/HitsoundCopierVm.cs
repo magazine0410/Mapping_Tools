@@ -241,7 +241,9 @@ namespace Mapping_Tools.Viewmodels {
 
             ExportBrowseCommand = new CommandImplementation(
                 _ => {
-                    string pathFromDirectory = Directory.GetParent(PathFrom).FullName;
+                    string pathFromDirectory = string.IsNullOrEmpty(PathFrom)
+                        ? null
+                        : Path.GetDirectoryName(PathFrom);
 
                     string[] paths = CorePlatform.FileDialogs.BeatmapFileDialog(pathFromDirectory, true);
                     if (paths.Length != 0) {

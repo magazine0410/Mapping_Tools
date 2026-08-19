@@ -7,17 +7,16 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows;
-using System.Windows.Media;
 using Mapping_Tools.Annotations;
 using Mapping_Tools.Classes;
 using Mapping_Tools.Classes.MathUtil;
-using System.Text.Json.Serialization;
+using Mapping_Tools.Classes.SystemTools.Platform;
+using Newtonsoft.Json;
 
 namespace Mapping_Tools.Viewmodels {
 
     public class MetadataManagerVm :INotifyPropertyChanged {
-        private Visibility beatmapFileNameOverflowErrorVisibility;
+        private bool beatmapFileNameOverflowError;
 
         private string importPath;
         private string exportPath;
@@ -49,7 +48,7 @@ namespace Mapping_Tools.Viewmodels {
             ImportLoadCommand = new CommandImplementation(
                 _ => {
                     try {
-                        string path = IOHelper.GetCurrentBeatmap();
+                        string path = CorePlatform.FileDialogs.GetCurrentBeatmap();
                         if (path != "") {
                             ImportPath = path;
                         }
@@ -60,7 +59,7 @@ namespace Mapping_Tools.Viewmodels {
 
             ImportBrowseCommand = new CommandImplementation(
                 _ => {
-                    var paths = IOHelper.BeatmapFileDialog(restore: !SettingsManager.Settings.CurrentBeatmapDefaultFolder);
+                    var paths = CorePlatform.FileDialogs.BeatmapFileDialog();
                     if( paths.Length != 0 ) {
                         ImportPath = paths[0];
                     }
@@ -74,7 +73,7 @@ namespace Mapping_Tools.Viewmodels {
             ExportLoadCommand = new CommandImplementation(
                 _ => {
                     try {
-                        string path = IOHelper.GetCurrentBeatmap();
+                        string path = CorePlatform.FileDialogs.GetCurrentBeatmap();
                         if (path != "") {
                             ExportPath = path;
                         }
@@ -85,9 +84,10 @@ namespace Mapping_Tools.Viewmodels {
 
             ExportBrowseCommand = new CommandImplementation(
                 _ => {
-                    string importPathDirectory = Directory.GetParent(ImportPath).FullName;
-
-                    var paths = IOHelper.BeatmapFileDialog(importPathDirectory, true);
+                    string importPathDirectory = string.IsNullOrWhiteSpace(ImportPath)
+                        ? CorePlatform.Settings.SongsPath
+                        : Path.GetDirectoryName(ImportPath) ?? CorePlatform.Settings.SongsPath;
+                    var paths = CorePlatform.FileDialogs.BeatmapFileDialog(importPathDirectory, true);
                     if( paths.Length != 0 ) {
                         ExportPath = string.Join("|", paths);
                     }
@@ -125,8 +125,10 @@ namespace Mapping_Tools.Viewmodels {
         private void OnPropertyChanged(object sender, PropertyChangedEventArgs e) {
             if (e.PropertyName == nameof(RomanisedArtist) || e.PropertyName == nameof(RomanisedTitle) || e.PropertyName == nameof(BeatmapCreator)) {
                 // Update error visibility if there is an error
-                var length = 13 + RomanisedArtist?.Length ?? 0 + RomanisedTitle?.Length ?? 0 + BeatmapCreator?.Length ?? 0;
-                BeatmapFileNameOverflowErrorVisibility = length > 255 ? Visibility.Visible : Visibility.Collapsed;
+                int length = 13 + (RomanisedArtist?.Length ?? 0) +
+                             (RomanisedTitle?.Length ?? 0) +
+                             (BeatmapCreator?.Length ?? 0);
+                HasBeatmapFileNameOverflowError = length > 255;
             }
         }
 
@@ -248,8 +250,9 @@ namespace Mapping_Tools.Viewmodels {
                 tags = value;
                 if (removeDuplicateTags)
                     tags = RemoveDuplicateTags(value);
-                TagsOverflowErrorVisibility = tags.Length > 1024 || tags.Split(' ').Length > 100 ? Visibility.Visible : Visibility.Collapsed;
-                OnPropertyChanged(nameof(TagsOverflowErrorVisibility));
+                HasTagsOverflowError = tags.Length > 1024 ||
+                                       tags.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length > 100;
+                OnPropertyChanged(nameof(HasTagsOverflowError));
                 OnPropertyChanged();
             }
         }
@@ -313,17 +316,17 @@ namespace Mapping_Tools.Viewmodels {
         }
 
         [JsonIgnore]
-        public Visibility BeatmapFileNameOverflowErrorVisibility {
-            get => beatmapFileNameOverflowErrorVisibility;
+        public bool HasBeatmapFileNameOverflowError {
+            get => beatmapFileNameOverflowError;
             set {
-                if (beatmapFileNameOverflowErrorVisibility == value) return;
-                beatmapFileNameOverflowErrorVisibility = value;
+                if (beatmapFileNameOverflowError == value) return;
+                beatmapFileNameOverflowError = value;
                 OnPropertyChanged();
             }
         }
 
         [JsonIgnore]
-        public Visibility TagsOverflowErrorVisibility { get; set; }
+        public bool HasTagsOverflowError { get; private set; }
 
         [JsonIgnore]
         public CommandImplementation ImportLoadCommand { get; }

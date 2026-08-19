@@ -1,10 +1,12 @@
 ﻿using Mapping_Tools.Classes.HitsoundStuff;
 using Mapping_Tools.Classes.SystemTools;
+using Mapping_Tools.Classes;
+using Mapping_Tools.Components.Domain;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows;
+using Mapping_Tools.Classes.SystemTools.Platform;
 using Mapping_Tools.Classes.BeatmapHelper;
 using Mapping_Tools.Classes.BeatmapHelper.Enums;
 using Newtonsoft.Json;
@@ -90,34 +92,34 @@ namespace Mapping_Tools.Viewmodels {
             get => hitsoundExportModeSetting;
             set {
                 if (Set(ref hitsoundExportModeSetting, value)) {
-                    RaisePropertyChanged(nameof(StandardExtraSettingsVisibility));
-                    RaisePropertyChanged(nameof(CoincidingExtraSettingsVisibility));
-                    RaisePropertyChanged(nameof(StoryboardExtraSettingsVisibility));
-                    RaisePropertyChanged(nameof(MidiExtraSettingsVisibility));
-                    RaisePropertyChanged(nameof(SampleExportSettingsVisibility));
+                    RaisePropertyChanged(nameof(IsStandardSettingsVisible));
+                    RaisePropertyChanged(nameof(IsCoincidingSettingsVisible));
+                    RaisePropertyChanged(nameof(IsStoryboardSettingsVisible));
+                    RaisePropertyChanged(nameof(IsMidiSettingsVisible));
+                    RaisePropertyChanged(nameof(AreSampleExportSettingsVisible));
                 }
             }
         }
 
         [JsonIgnore]
-        public Visibility StandardExtraSettingsVisibility =>
-            HitsoundExportModeSetting == HitsoundExportMode.Standard ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsStandardSettingsVisible =>
+            HitsoundExportModeSetting == HitsoundExportMode.Standard;
 
         [JsonIgnore]
-        public Visibility CoincidingExtraSettingsVisibility =>
-            HitsoundExportModeSetting == HitsoundExportMode.Coinciding ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsCoincidingSettingsVisible =>
+            HitsoundExportModeSetting == HitsoundExportMode.Coinciding;
 
         [JsonIgnore]
-        public Visibility StoryboardExtraSettingsVisibility =>
-            HitsoundExportModeSetting == HitsoundExportMode.Storyboard ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsStoryboardSettingsVisible =>
+            HitsoundExportModeSetting == HitsoundExportMode.Storyboard;
 
         [JsonIgnore]
-        public Visibility MidiExtraSettingsVisibility =>
-            HitsoundExportModeSetting == HitsoundExportMode.Midi ? Visibility.Visible : Visibility.Collapsed;
+        public bool IsMidiSettingsVisible =>
+            HitsoundExportModeSetting == HitsoundExportMode.Midi;
 
         [JsonIgnore]
-        public Visibility SampleExportSettingsVisibility =>
-            HitsoundExportModeSetting == HitsoundExportMode.Midi ? Visibility.Collapsed : Visibility.Visible;
+        public bool AreSampleExportSettingsVisible =>
+            HitsoundExportModeSetting != HitsoundExportMode.Midi;
         
         public IEnumerable<HitsoundExportMode> HitsoundExportModes => Enum.GetValues(typeof(HitsoundExportMode)).Cast<HitsoundExportMode>();
 
@@ -206,6 +208,21 @@ namespace Mapping_Tools.Viewmodels {
 
         public ObservableCollection<HitsoundLayer> HitsoundLayers { get; set; }
 
+        private HitsoundLayer selectedLayer;
+        [JsonIgnore]
+        public HitsoundLayer SelectedLayer {
+            get => selectedLayer;
+            set => Set(ref selectedLayer, value);
+        }
+
+        [JsonIgnore] public CommandImplementation AddLayerCommand { get; }
+        [JsonIgnore] public CommandImplementation RemoveLayerCommand { get; }
+        [JsonIgnore] public CommandImplementation RaiseLayerCommand { get; }
+        [JsonIgnore] public CommandImplementation LowerLayerCommand { get; }
+        [JsonIgnore] public CommandImplementation ReloadLayerCommand { get; }
+        [JsonIgnore] public CommandImplementation ImportLayersCommand { get; }
+        [JsonIgnore] public CommandImplementation PreviewLayerCommand { get; }
+
         public string EditTimes { get; set; }
 
         public HitsoundStudioVm() : this("", new Sample {Priority = int.MaxValue}, new ObservableCollection<HitsoundLayer>()) { }
@@ -214,7 +231,7 @@ namespace Mapping_Tools.Viewmodels {
             BaseBeatmap = baseBeatmap;
             DefaultSample = defaultSample;
             HitsoundLayers = hitsoundLayers;
-            ExportFolder = MainWindow.ExportPath;
+            ExportFolder = CorePlatform.Paths.ExportPath;
             HitsoundDiffName = "Hitsounds";
             ShowResults = false;
             ExportMap = true;
@@ -228,6 +245,63 @@ namespace Mapping_Tools.Viewmodels {
             FirstCustomIndex = 1;
             SingleSampleExportFormat = HitsoundExporter.SampleExportFormat.Default;
             MixedSampleExportFormat = HitsoundExporter.SampleExportFormat.Default;
+
+            AddLayerCommand = new CommandImplementation(_ => {
+                var layer = new HitsoundLayer {
+                    Name = $"Layer {HitsoundLayers.Count + 1}",
+                    Priority = HitsoundLayers.Count
+                };
+                HitsoundLayers.Add(layer);
+                SelectedLayer = layer;
+            });
+            RemoveLayerCommand = new CommandImplementation(_ => {
+                if (SelectedLayer is null) return;
+                int index = HitsoundLayers.IndexOf(SelectedLayer);
+                HitsoundLayers.Remove(SelectedLayer);
+                RecalculatePriorities();
+                SelectedLayer = HitsoundLayers.Count == 0
+                    ? null
+                    : HitsoundLayers[Math.Max(0, Math.Min(index, HitsoundLayers.Count - 1))];
+            });
+            RaiseLayerCommand = new CommandImplementation(_ => MoveSelectedLayer(-1));
+            LowerLayerCommand = new CommandImplementation(_ => MoveSelectedLayer(1));
+            ReloadLayerCommand = new CommandImplementation(_ => {
+                if (SelectedLayer?.ImportArgs is not { CanImport: true }) return;
+                var imported = HitsoundImporter.ImportReloading(
+                    SelectedLayer.ImportArgs.GetImportReloadingArgs());
+                SelectedLayer.Reload(imported);
+            });
+            ImportLayersCommand = new CommandImplementation(_ => {
+                if (SelectedLayer?.ImportArgs is not { CanImport: true }) return;
+                var imported = HitsoundImporter.ImportReloading(
+                    SelectedLayer.ImportArgs.GetImportReloadingArgs());
+                int insertionIndex = HitsoundLayers.IndexOf(SelectedLayer) + 1;
+                foreach (var layer in imported) {
+                    HitsoundLayers.Insert(insertionIndex++, layer);
+                }
+                RecalculatePriorities();
+                if (imported.Count > 0) SelectedLayer = imported[0];
+            });
+            PreviewLayerCommand = new CommandImplementation(_ => {
+                try {
+                    Classes.Tools.HitsoundStudioRunner.Preview(SelectedLayer);
+                } catch (Exception ex) {
+                    CorePlatform.Dialogs.ShowMessage(ex.Message, "Could not preview sample");
+                }
+            });
+        }
+
+        private void MoveSelectedLayer(int delta) {
+            if (SelectedLayer is null) return;
+            int oldIndex = HitsoundLayers.IndexOf(SelectedLayer);
+            int newIndex = Math.Clamp(oldIndex + delta, 0, HitsoundLayers.Count - 1);
+            if (newIndex == oldIndex) return;
+            HitsoundLayers.Move(oldIndex, newIndex);
+            RecalculatePriorities();
+        }
+
+        private void RecalculatePriorities() {
+            for (int i = 0; i < HitsoundLayers.Count; i++) HitsoundLayers[i].Priority = i;
         }
 
         public enum HitsoundExportMode {

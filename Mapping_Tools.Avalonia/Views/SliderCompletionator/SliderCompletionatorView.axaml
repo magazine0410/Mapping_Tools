@@ -1,0 +1,53 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.SliderCompletionator.SliderCompletionatorView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:DoubleToStringConverter x:Key="DoubleConverter"/>
+        <domain:TimeToStringConverter x:Key="TimeConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="*,Auto">
+        <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+            <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+            <Grid ColumnDefinitions="260,260" ColumnSpacing="12" Margin="0,20,0,0">
+                <ComboBox ItemsSource="{Binding ImportModes}" SelectedItem="{Binding ImportModeSetting}"
+                          PlaceholderText="Object selection mode"/>
+                <TextBox Grid.Column="1" Text="{Binding TimeCode}"
+                         IsVisible="{Binding IsTimeCodeBoxVisible}" PlaceholderText="Time code"/>
+            </Grid>
+            <CheckBox Margin="0,12,0,0" Content="Move anchors to new length" IsChecked="{Binding MoveAnchors}"/>
+            <CheckBox Content="Use slider end time" IsChecked="{Binding UseEndTime}"/>
+            <CheckBox Content="Use current editor time" IsChecked="{Binding UseCurrentEditorTime}"
+                      IsEnabled="{Binding UseEndTime}"/>
+            <CheckBox Content="Delegate SV to BPM" IsChecked="{Binding DelegateToBpm}"/>
+            <CheckBox Content="Remove slider ticks" IsChecked="{Binding RemoveSliderTicks}"
+                      IsEnabled="{Binding DelegateToBpm}"/>
+            <Separator Margin="0,14"/>
+            <ComboBox Width="260" HorizontalAlignment="Left" ItemsSource="{Binding FreeVariables}"
+                      SelectedItem="{Binding FreeVariableSetting}" PlaceholderText="Calculated variable"/>
+            <c:ValidatedTextBox Width="260" HorizontalAlignment="Left" Margin="0,12,0,0"
+                                IsVisible="{Binding IsDurationBoxVisible}" Value="{Binding Duration}"
+                                Converter="{StaticResource DoubleConverter}" PlaceholderText="Duration (beats)"/>
+            <c:ValidatedTextBox Width="260" HorizontalAlignment="Left" Margin="0,12,0,0"
+                                IsVisible="{Binding IsEndTimeBoxVisible}" Value="{Binding EndTime}"
+                                Converter="{StaticResource TimeConverter}" PlaceholderText="End time"/>
+            <c:ValidatedTextBox Width="260" HorizontalAlignment="Left" Margin="0,12,0,0"
+                                IsVisible="{Binding IsLengthBoxVisible}" Value="{Binding Length}"
+                                Converter="{StaticResource DoubleConverter}" PlaceholderText="Path-length fraction"/>
+            <c:ValidatedTextBox Width="260" HorizontalAlignment="Left" Margin="0,12,0,0"
+                                IsVisible="{Binding IsVelocityBoxVisible}" Value="{Binding SliderVelocity}"
+                                Converter="{StaticResource DoubleConverter}" PlaceholderText="Slider velocity multiplier"/>
+        </StackPanel>
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,16,0,0">
+            <ProgressBar Value="{Binding #This.Progress}" Height="10" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Margin="16,0,0,0" Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                    IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                <icons:MaterialIcon Kind="Play" Width="30" Height="30"/>
+            </Button>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

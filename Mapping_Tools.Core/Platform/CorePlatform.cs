@@ -17,6 +17,7 @@ namespace Mapping_Tools.Classes.SystemTools.Platform {
         private static ICoreSettings settings = new DefaultCoreSettings();
         private static IFileDialogService fileDialogs = new NullFileDialogService();
         private static IShellService shell = new NullShellService();
+        private static IAudioPlaybackService audio = new NullAudioPlaybackService();
 
         public static IDialogService Dialogs {
             get => dialogs;
@@ -51,6 +52,11 @@ namespace Mapping_Tools.Classes.SystemTools.Platform {
         public static IShellService Shell {
             get => shell;
             set => shell = value ?? new NullShellService();
+        }
+
+        public static IAudioPlaybackService Audio {
+            get => audio;
+            set => audio = value ?? new NullAudioPlaybackService();
         }
 
         /// <summary>

@@ -1,0 +1,158 @@
+<views:SingleRunMappingTool xmlns="https://github.com/avaloniaui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                            xmlns:views="clr-namespace:Mapping_Tools.Avalonia.Views"
+                            xmlns:c="clr-namespace:Mapping_Tools.Components"
+                            xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+                            xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                            x:Class="Mapping_Tools.Avalonia.Views.HitsoundStudio.HitsoundStudioView"
+                            x:Name="This">
+    <views:SingleRunMappingTool.Resources>
+        <domain:DoubleToStringConverter x:Key="DoubleConverter"/>
+        <domain:IntToStringConverter x:Key="IntConverter"/>
+    </views:SingleRunMappingTool.Resources>
+    <Grid Margin="20" RowDefinitions="Auto,*,Auto">
+        <c:ViewHeaderComponent ParentControl="{Binding #This}" HorizontalAlignment="Left"/>
+        <TabControl Grid.Row="1" Margin="0,12,0,0">
+            <TabItem Header="Layers">
+                <Grid ColumnDefinitions="300,*" ColumnSpacing="18" Margin="10">
+                    <Grid RowDefinitions="*,Auto">
+                        <ListBox ItemsSource="{Binding HitsoundLayers}"
+                                 SelectedItem="{Binding SelectedLayer}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="40,*,Auto" Margin="4">
+                                        <TextBlock Text="{Binding Priority}" Opacity="0.55"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Name}"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Times.Count}" Opacity="0.55"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
+                            <Button Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding AddLayerCommand}" ToolTip.Tip="Add layer">
+                                <icons:MaterialIcon Kind="Plus" Width="22" Height="22"/>
+                            </Button>
+                            <Button Margin="6,0" Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding RemoveLayerCommand}" ToolTip.Tip="Remove layer">
+                                <icons:MaterialIcon Kind="Minus" Width="22" Height="22"/>
+                            </Button>
+                            <Button Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding RaiseLayerCommand}" ToolTip.Tip="Move layer up">
+                                <icons:MaterialIcon Kind="ArrowUp" Width="22" Height="22"/>
+                            </Button>
+                            <Button Margin="6,0" Theme="{StaticResource MaterialDesignFloatingActionMiniLightButton}" Command="{Binding LowerLayerCommand}" ToolTip.Tip="Move layer down">
+                                <icons:MaterialIcon Kind="ArrowDown" Width="22" Height="22"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <ScrollViewer Grid.Column="1" DataContext="{Binding SelectedLayer}">
+                        <StackPanel MaxWidth="720" HorizontalAlignment="Left">
+                            <TextBlock Text="Layer" FontSize="20" FontWeight="SemiBold"/>
+                            <TextBox Text="{Binding Name}" PlaceholderText="Layer name" Margin="0,8,0,0"/>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,8,0,0">
+                                <ComboBox ItemsSource="{Binding SampleSets}" SelectedItem="{Binding SampleSet}" PlaceholderText="Sample set"/>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding Hitsounds}" SelectedItem="{Binding Hitsound}" PlaceholderText="Hitsound"/>
+                            </Grid>
+                            <TextBox Text="{Binding TimesText}" PlaceholderText="Times in milliseconds, separated by commas"
+                                     AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70" Margin="0,8,0,0"/>
+
+                            <TextBlock Text="Sample" FontSize="20" FontWeight="SemiBold" Margin="0,18,0,8"/>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <TextBox Text="{Binding SampleArgs.Path}" PlaceholderText="Audio or soundfont path"/>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Button Theme="{StaticResource IconButton}" Click="PreviewSample_Click" ToolTip.Tip="Preview this sample">
+                                        <icons:MaterialIcon Kind="Play" Width="24" Height="24"/>
+                                    </Button>
+                                    <Button Theme="{StaticResource IconButton}" Click="BrowseSample_Click" ToolTip.Tip="Choose sample">
+                                        <icons:MaterialIcon Kind="FileMusic" Width="24" Height="24"/>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" Margin="0,8,0,0">
+                                <c:ValidatedTextBox Value="{Binding SampleArgs.Volume}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Volume (0–1)"/>
+                                <c:ValidatedTextBox Grid.Column="1" Value="{Binding SampleArgs.Panning}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Panning (-1–1)"/>
+                                <c:ValidatedTextBox Grid.Column="2" Value="{Binding SampleArgs.PitchShift}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Pitch shift"/>
+                                <c:ValidatedTextBox Grid.Row="1" Value="{Binding SampleArgs.Bank}" Converter="{StaticResource IntConverter}" PlaceholderText="Bank"/>
+                                <c:ValidatedTextBox Grid.Row="1" Grid.Column="1" Value="{Binding SampleArgs.Patch}" Converter="{StaticResource IntConverter}" PlaceholderText="Patch"/>
+                                <c:ValidatedTextBox Grid.Row="1" Grid.Column="2" Value="{Binding SampleArgs.Instrument}" Converter="{StaticResource IntConverter}" PlaceholderText="Instrument"/>
+                                <c:ValidatedTextBox Grid.Row="2" Value="{Binding SampleArgs.Key}" Converter="{StaticResource IntConverter}" PlaceholderText="Key"/>
+                                <c:ValidatedTextBox Grid.Row="2" Grid.Column="1" Value="{Binding SampleArgs.Length}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Length"/>
+                            </Grid>
+
+                            <TextBlock Text="Import / reload source" FontSize="20" FontWeight="SemiBold" Margin="0,18,0,8"/>
+                            <ComboBox ItemsSource="{Binding ImportTypes}" SelectedItem="{Binding ImportArgs.ImportType}" PlaceholderText="Import type"/>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,8,0,0">
+                                <TextBox Text="{Binding ImportArgs.Path}" PlaceholderText="Source beatmap or MIDI path"/>
+                                <Button Grid.Column="1" Theme="{StaticResource IconButton}" Click="BrowseSource_Click">
+                                    <icons:MaterialIcon Kind="Folder" Width="24" Height="24"/>
+                                </Button>
+                            </Grid>
+                            <TextBox Text="{Binding ImportArgs.SamplePath}" PlaceholderText="Source sample path (hitsound/storyboard)" Margin="0,8,0,0"/>
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8" Margin="0,8,0,0">
+                                <c:ValidatedTextBox Value="{Binding ImportArgs.X}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Stack X"/>
+                                <c:ValidatedTextBox Grid.Column="1" Value="{Binding ImportArgs.Y}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Stack Y"/>
+                                <c:ValidatedTextBox Grid.Column="2" Value="{Binding ImportArgs.Offset}" Converter="{StaticResource DoubleConverter}" PlaceholderText="MIDI offset"/>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <CheckBox Content="Separate volumes" IsChecked="{Binding ImportArgs.DiscriminateVolumes}"/>
+                                <CheckBox Margin="14,0,0,0" Content="Detect duplicate samples" IsChecked="{Binding ImportArgs.DetectDuplicateSamples}"/>
+                                <CheckBox Margin="14,0,0,0" Content="Remove duplicate times" IsChecked="{Binding ImportArgs.RemoveDuplicates}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                <Button Content="Import as new layers" Click="ImportLayers_Click"/>
+                                <Button Margin="8,0,0,0" Content="Reload this layer" Click="ReloadLayer_Click"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Export">
+                <ScrollViewer>
+                    <StackPanel Margin="10" MaxWidth="720" HorizontalAlignment="Left">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <TextBox Text="{Binding BaseBeatmap}" PlaceholderText="Base beatmap"/>
+                            <Button Grid.Column="1" Theme="{StaticResource IconButton}" Click="BrowseBaseBeatmap_Click">
+                                <icons:MaterialIcon Kind="Folder" Width="24" Height="24"/>
+                            </Button>
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="0,8,0,0">
+                            <TextBox Text="{Binding ExportFolder}" PlaceholderText="Export folder"/>
+                            <Button Grid.Column="1" Theme="{StaticResource IconButton}" Click="BrowseExportFolder_Click">
+                                <icons:MaterialIcon Kind="Folder" Width="24" Height="24"/>
+                            </Button>
+                        </Grid>
+                        <TextBox Text="{Binding HitsoundDiffName}" PlaceholderText="Hitsound map name" Margin="0,8,0,0"/>
+                        <ComboBox Margin="0,12,0,0" ItemsSource="{Binding HitsoundExportModes}" SelectedItem="{Binding HitsoundExportModeSetting}" PlaceholderText="Export mode"/>
+                        <ComboBox Margin="0,8,0,0" ItemsSource="{Binding HitsoundExportGameModes}" SelectedItem="{Binding HitsoundExportGameMode}" PlaceholderText="Game mode"
+                                  IsVisible="{Binding AreSampleExportSettingsVisible}"/>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,8,0,0" IsVisible="{Binding IsStandardSettingsVisible}">
+                            <c:ValidatedTextBox Value="{Binding ZipLayersLeniency}" Converter="{StaticResource DoubleConverter}" PlaceholderText="Note grouping leniency"/>
+                            <c:ValidatedTextBox Grid.Column="1" Value="{Binding FirstCustomIndex}" Converter="{StaticResource IntConverter}" PlaceholderText="First custom index"/>
+                        </Grid>
+                        <CheckBox Content="Add regular hitsounds" IsChecked="{Binding AddCoincidingRegularHitsounds}" IsVisible="{Binding IsCoincidingSettingsVisible}" Margin="0,8,0,0"/>
+                        <CheckBox Content="Add green-line volume" IsChecked="{Binding AddGreenLineVolumeToMidi}" IsVisible="{Binding IsMidiSettingsVisible}" Margin="0,8,0,0"/>
+                        <ComboBox Margin="0,8,0,0" ItemsSource="{Binding SampleExportFormatDisplayNames}" SelectedItem="{Binding SingleSampleExportFormatDisplay}" PlaceholderText="Single-sample format"
+                                  IsVisible="{Binding AreSampleExportSettingsVisible}"/>
+                        <ComboBox Margin="0,8,0,0" ItemsSource="{Binding SampleExportFormatDisplayNames}" SelectedItem="{Binding MixedSampleExportFormatDisplay}" PlaceholderText="Mixed-sample format"
+                                  IsVisible="{Binding AreSampleExportSettingsVisible}"/>
+                        <StackPanel Margin="0,12,0,0">
+                            <CheckBox Content="Export hitsound map" IsChecked="{Binding ExportMap}"/>
+                            <CheckBox Content="Export samples" IsChecked="{Binding ExportSamples}" IsVisible="{Binding AreSampleExportSettingsVisible}"/>
+                            <CheckBox Content="Show export statistics" IsChecked="{Binding ShowResults}"/>
+                            <CheckBox Content="Reuse previous sample schema" IsChecked="{Binding UsePreviousSampleSchema}" IsVisible="{Binding AreSampleExportSettingsVisible}"/>
+                            <CheckBox Content="Allow previous schema to grow" IsChecked="{Binding AllowGrowthPreviousSampleSchema}" IsVisible="{Binding AreSampleExportSettingsVisible}"/>
+                            <CheckBox Content="Delete files already in the export folder" IsChecked="{Binding DeleteAllInExportFirst}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+            <ProgressBar Value="{Binding #This.Progress}" Height="10" VerticalAlignment="Center"/>
+            <Button Grid.Column="1" Margin="16,0,0,0" Theme="{StaticResource MaterialDesignFloatingActionButton}"
+                    IsEnabled="{Binding #This.CanRun}" Click="Start_Click">
+                <icons:MaterialIcon Kind="Play" Width="30" Height="30"/>
+            </Button>
+        </Grid>
+    </Grid>
+</views:SingleRunMappingTool>

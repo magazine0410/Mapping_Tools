@@ -17,11 +17,13 @@ namespace Mapping_Tools.Avalonia.Platform {
 
         public string OsuPath { get; set; } = string.Empty;
         public string SongsPath { get; set; } = string.Empty;
+        public string OsuConfigPath { get; set; } = string.Empty;
         public string BackupsPath { get; set; } = string.Empty;
         public bool MakeBackups { get; set; } = true;
         public int MaxBackupFiles { get; set; } = 1000;
         public bool UseEditorReader { get; set; }
         public bool AutoReload { get; set; }
+        public bool DarkTheme { get; set; } = true;
 
         public JsonCoreSettings() {
             FilePath = Path.Combine(CorePlatform.Paths.AppDataPath, "config.avalonia.json");
