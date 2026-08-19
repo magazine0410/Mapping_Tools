@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Mapping_Tools.Views"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
-             xmlns:viewmodels="clr-namespace:Mapping_Tools.Viewmodels"
+             xmlns:viewmodels="clr-namespace:Mapping_Tools.Viewmodels;assembly=Mapping_Tools.Core"
              mc:Ignorable="d" 
              x:Name="This"
              d:DesignHeight="650" Width="759.5" d:DataContext="{d:DesignInstance Type=viewmodels:MapsetMergerVm}">

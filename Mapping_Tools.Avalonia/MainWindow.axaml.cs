@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
 using Mapping_Tools.Avalonia.Platform;
 using Mapping_Tools.Avalonia.Views;
@@ -29,17 +28,19 @@ namespace Mapping_Tools.Avalonia {
             InitializeComponent();
 
             var version = Assembly.GetExecutingAssembly().GetName().Version;
-            this.FindControl<TextBlock>("VersionText")!.Text = version is null ? string.Empty : $"v{version.ToString(3)}";
+            VersionText.Text = version is null ? string.Empty : $"v{version.ToString(3)}";
 
             // Controls with no dialog host of their own show their dialogs here.
-            Components.DialogHost.Root = this.FindControl<Components.DialogHost>("RootDialogHost");
+            Components.DialogHost.Root = RootDialogHost;
 
             LoadTools();
             AvaloniaNotificationService.Sink = ShowSnack;
+
+            CorePlatform.FileDialogs.CurrentBeatmapsChanged += (_, paths) =>
+                Dispatcher.UIThread.Post(() => ShowCurrentBeatmaps(paths));
+            ShowCurrentBeatmaps(CorePlatform.FileDialogs.GetCurrentBeatmaps());
             Closing += (_, _) => views.AutoSaveSettings();
         }
-
-        private void InitializeComponent() => AvaloniaXamlLoader.Load(this);
 
         /// <summary>
         /// Finds every tool by reflection, the same way the WPF shell does.
@@ -68,7 +69,7 @@ namespace Mapping_Tools.Avalonia {
         /// Shown while no tool view has been ported yet.
         /// </summary>
         private void ShowPlaceholder() {
-            this.FindControl<ContentControl>("ToolHost")!.Content = new Border {
+            ToolHost.Content = new Border {
                 Padding = new global::Avalonia.Thickness(48),
                 Child = new StackPanel {
                     Spacing = 12,
@@ -90,14 +91,13 @@ namespace Mapping_Tools.Avalonia {
         }
 
         private void ApplyFilter(string filter) {
-            var list = this.FindControl<ListBox>("ToolList")!;
-            list.ItemsSource = string.IsNullOrWhiteSpace(filter)
+            ToolList.ItemsSource = string.IsNullOrWhiteSpace(filter)
                 ? allTools
                 : allTools.Where(t => t.Name.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
         }
 
         private void ToolFilterChanged(object sender, TextChangedEventArgs e) =>
-            ApplyFilter(this.FindControl<TextBox>("ToolFilter")!.Text ?? string.Empty);
+            ApplyFilter(ToolFilter.Text ?? string.Empty);
 
         private void ToolSelected(object sender, SelectionChangedEventArgs e) {
             if (e.AddedItems.Count == 0 || e.AddedItems[0] is not ToolEntry entry) return;
@@ -105,15 +105,15 @@ namespace Mapping_Tools.Avalonia {
 
             activeTool?.Deactivate();
             activeTool = tool;
-            this.FindControl<ContentControl>("ToolHost")!.Content = tool;
-            this.FindControl<TextBlock>("CurrentToolText")!.Text = entry.Name;
+            ToolHost.Content = tool;
+            CurrentToolText.Text = entry.Name;
             tool.Activate();
         }
 
         /// <summary>Shows a short message at the bottom, then hides it again.</summary>
         private void ShowSnack(string message) {
-            var border = this.FindControl<Border>("SnackBorder")!;
-            this.FindControl<TextBlock>("SnackText")!.Text = message;
+            var border = SnackBorder;
+            SnackText.Text = message;
             border.IsVisible = true;
 
             snackTimer?.Stop();
@@ -126,10 +126,19 @@ namespace Mapping_Tools.Avalonia {
         }
 
         private void OpenBeatmap(object sender, RoutedEventArgs e) {
-            var path = CorePlatform.FileDialogs.GetCurrentBeatmap();
-            if (!string.IsNullOrEmpty(path)) {
-                CorePlatform.Notifications.Notify($"Selected {System.IO.Path.GetFileName(path)}");
-            }
+            var paths = CorePlatform.FileDialogs.BeatmapFileDialog(multiselect: true);
+            if (paths.Length == 0) return;
+
+            CorePlatform.FileDialogs.SetCurrentBeatmaps(paths);
+        }
+
+        /// <summary>Shows the beatmaps that the tools work on, in the header.</summary>
+        private void ShowCurrentBeatmaps(string[] paths) {
+            CurrentBeatmapText.Text = paths.Length switch {
+                0 => string.Empty,
+                1 => System.IO.Path.GetFileName(paths[0]),
+                _ => $"{paths.Length} beatmaps"
+            };
         }
 
         private void OpenConfigFolder(object sender, RoutedEventArgs e) =>

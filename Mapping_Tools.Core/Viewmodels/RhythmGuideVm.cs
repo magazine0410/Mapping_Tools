@@ -1,4 +1,5 @@
-﻿using Mapping_Tools.Classes.SystemTools;
+using Mapping_Tools.Classes.SystemTools;
+using Mapping_Tools.Classes.SystemTools.Platform;
 using Mapping_Tools.Classes.Tools;
 using Mapping_Tools.Components.Domain;
 using System;
@@ -20,7 +21,7 @@ namespace Mapping_Tools.Viewmodels {
             ImportLoadCommand = new CommandImplementation(
                 _ => {
                     try {
-                        var path = IOHelper.GetCurrentBeatmap();
+                        var path = CorePlatform.FileDialogs.FetchBeatmapFromClient();
                         if (path != "") {
                             GuideGeneratorArgs.Paths = new[] { path };
                         }
@@ -32,7 +33,7 @@ namespace Mapping_Tools.Viewmodels {
 
             ImportBrowseCommand = new CommandImplementation(
                 _ => {
-                    var paths = IOHelper.BeatmapFileDialog(true, !SettingsManager.Settings.CurrentBeatmapDefaultFolder);
+                    var paths = CorePlatform.FileDialogs.BeatmapFileDialog(true);
                     if (paths.Length != 0) {
                         GuideGeneratorArgs.Paths = paths;
                     }
@@ -41,7 +42,7 @@ namespace Mapping_Tools.Viewmodels {
             ExportLoadCommand = new CommandImplementation(
                 _ => {
                     try {
-                        var path = IOHelper.GetCurrentBeatmap();
+                        var path = CorePlatform.FileDialogs.FetchBeatmapFromClient();
                         if (path != "") {
                             GuideGeneratorArgs.ExportPath = path;
                         }
@@ -53,7 +54,7 @@ namespace Mapping_Tools.Viewmodels {
 
             ExportBrowseCommand = new CommandImplementation(
                 _ => {
-                    var paths = IOHelper.BeatmapFileDialog(restore: !SettingsManager.Settings.CurrentBeatmapDefaultFolder);
+                    var paths = CorePlatform.FileDialogs.BeatmapFileDialog();
                     if (paths.Length != 0) {
                         GuideGeneratorArgs.ExportPath = paths[0];
                     }

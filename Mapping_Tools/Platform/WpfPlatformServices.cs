@@ -84,7 +84,51 @@ namespace Mapping_Tools.Platform {
         public string SaveProjectDialog(string initialDirectory = null) =>
             IOHelper.SaveProjectDialog(initialDirectory);
 
-        public string GetCurrentBeatmap() => IOHelper.GetCurrentBeatmap();
+        public string GetCurrentBeatmap() => IOHelper.GetCurrentBeatmapOrCurrentBeatmap();
+
+        public string[] GetCurrentBeatmaps() =>
+            MainWindow.AppWindow?.GetCurrentMaps() ?? Array.Empty<string>();
+
+        public void SetCurrentBeatmaps(params string[] paths) =>
+            MainWindow.AppWindow?.SetCurrentMaps(paths ?? Array.Empty<string>());
+
+        private EventHandler<string[]> currentBeatmapsChanged;
+        private bool hooked;
+
+        /// <summary>
+        /// The main window owns the list, so its event is passed on here. The hook is
+        /// made at the first subscription, not in the constructor: this service is
+        /// built while the main window is still building itself.
+        /// </summary>
+        public event EventHandler<string[]> CurrentBeatmapsChanged {
+            add {
+                Hook();
+                currentBeatmapsChanged += value;
+            }
+            remove => currentBeatmapsChanged -= value;
+        }
+
+        private void Hook() {
+            if (hooked || MainWindow.AppWindow is null) return;
+            hooked = true;
+            MainWindow.AppWindow.OnUpdateCurrentBeatmap += (_, paths) =>
+                currentBeatmapsChanged?.Invoke(this, Split(paths));
+        }
+
+        public string FetchBeatmapFromClient() => IOHelper.GetCurrentBeatmap();
+
+        public string[] BeatmapFileDialog(bool multiselect = false) =>
+            IOHelper.BeatmapFileDialog(multiselect,
+                restore: !SettingsManager.Settings.CurrentBeatmapDefaultFolder);
+
+        public string[] BeatmapFileDialog(string initialDirectory, bool multiselect = false) =>
+            IOHelper.BeatmapFileDialog(initialDirectory, multiselect);
+
+        public string FolderDialog(string initialDirectory = null) =>
+            IOHelper.FolderDialog(initialDirectory ?? string.Empty);
+
+        private static string[] Split(string paths) =>
+            string.IsNullOrEmpty(paths) ? Array.Empty<string>() : paths.Split('|');
     }
 
     /// <summary>Reads the live osu! editor through EditorReader.</summary>

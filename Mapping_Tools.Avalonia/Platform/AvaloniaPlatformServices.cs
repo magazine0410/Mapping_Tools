@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -178,20 +179,70 @@ namespace Mapping_Tools.Avalonia.Platform {
                 return file?.TryGetLocalPath();
             });
 
+        private static readonly FilePickerFileType OsuFiles = new("osu! files") {
+            Patterns = new[] { "*.osu", "*.osb" }
+        };
+
+        private string[] currentBeatmaps = Array.Empty<string>();
+
         /// <summary>
-        /// There is no osu! client to ask on Linux, so the user picks the beatmap.
+        /// The beatmap the user works on: the first of the ones the shell holds. When
+        /// the shell holds none, the user is asked to pick one.
         /// </summary>
-        public string GetCurrentBeatmap() =>
+        public string GetCurrentBeatmap() {
+            if (currentBeatmaps.Length > 0) return currentBeatmaps[0];
+
+            var picked = BeatmapFileDialog();
+            if (picked.Length == 0) return null;
+
+            SetCurrentBeatmaps(picked);
+            return picked[0];
+        }
+
+        public string[] GetCurrentBeatmaps() => currentBeatmaps;
+
+        public void SetCurrentBeatmaps(params string[] paths) {
+            currentBeatmaps = paths ?? Array.Empty<string>();
+            CurrentBeatmapsChanged?.Invoke(this, currentBeatmaps);
+        }
+
+        public event EventHandler<string[]> CurrentBeatmapsChanged;
+
+        /// <summary>
+        /// There is no osu! client to ask on Linux, because osu! stable itself runs in
+        /// WINE there. The user picks the beatmap instead. See section 3.2 of
+        /// LINUX_PORT.md.
+        /// </summary>
+        public string FetchBeatmapFromClient() {
+            var picked = BeatmapFileDialog();
+            return picked.Length > 0 ? picked[0] : string.Empty;
+        }
+
+        public string[] BeatmapFileDialog(bool multiselect = false) =>
+            BeatmapFileDialog(CorePlatform.Settings.SongsPath, multiselect);
+
+        public string[] BeatmapFileDialog(string initialDirectory, bool multiselect = false) =>
             RunOnUiThread(async provider => {
                 var files = await provider.OpenFilePickerAsync(new FilePickerOpenOptions {
-                    Title = "Select the beatmap",
-                    AllowMultiple = false,
-                    FileTypeFilter = new[] {
-                        new FilePickerFileType("osu! beatmap") { Patterns = new[] { "*.osu" } }
-                    }
+                    Title = multiselect ? "Select the beatmaps" : "Select the beatmap",
+                    AllowMultiple = multiselect,
+                    FileTypeFilter = new[] { OsuFiles },
+                    SuggestedStartLocation = await FolderOrNull(provider, initialDirectory)
                 });
-                return files.Count > 0 ? files[0].TryGetLocalPath() : null;
-            });
+                return files.Select(f => f.TryGetLocalPath())
+                    .Where(p => !string.IsNullOrEmpty(p))
+                    .ToArray();
+            }) ?? Array.Empty<string>();
+
+        public string FolderDialog(string initialDirectory = null) =>
+            RunOnUiThread(async provider => {
+                var folders = await provider.OpenFolderPickerAsync(new FolderPickerOpenOptions {
+                    Title = "Select the folder",
+                    AllowMultiple = false,
+                    SuggestedStartLocation = await FolderOrNull(provider, initialDirectory)
+                });
+                return folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+            }) ?? string.Empty;
 
         private static async Task<IStorageFolder> FolderOrNull(IStorageProvider provider, string path) {
             if (string.IsNullOrEmpty(path) || !Directory.Exists(path)) return null;
@@ -202,15 +253,21 @@ namespace Mapping_Tools.Avalonia.Platform {
             }
         }
 
-        private static string RunOnUiThread(Func<IStorageProvider, Task<string>> pick) {
+        /// <summary>
+        /// Runs an Avalonia file picker, which is asynchronous, and waits for it. The
+        /// core asks for its dialogs the synchronous way, so the wait has to happen
+        /// somewhere. On the user interface thread it is a nested message loop, which
+        /// keeps the window alive while the picker is up.
+        /// </summary>
+        private static T RunOnUiThread<T>(Func<IStorageProvider, Task<T>> pick) {
             var window = AvaloniaPlatformServices.MainWindow;
-            if (window is null) return null;
+            if (window is null) return default;
 
             if (Dispatcher.UIThread.CheckAccess()) {
-                string result = null;
+                T result = default;
                 var frame = new DispatcherFrame();
                 _ = pick(window.StorageProvider).ContinueWith(t => {
-                    result = t.IsCompletedSuccessfully ? t.Result : null;
+                    result = t.IsCompletedSuccessfully ? t.Result : default;
                     frame.Continue = false;
                 }, TaskScheduler.FromCurrentSynchronizationContext());
                 Dispatcher.UIThread.PushFrame(frame);

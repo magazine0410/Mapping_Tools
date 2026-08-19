@@ -15,14 +15,24 @@ crosses the Windows boundary — it holds the porting plan and the current state
 |---|---|---|
 | `Mapping_Tools.Core` | `net10.0` | Portable logic. Beatmap parser, math, hitsounds, tool algorithms. |
 | `Mapping_Tools` | `net10.0-windows` | WPF host. Views, view models, Windows-only services. |
-| `Mapping_Tools.Avalonia` | `net10.0` | Avalonia host, for Linux. Shell and shared parts. No tool views yet. |
+| `Mapping_Tools.Avalonia` | `net10.0` | Avalonia host, for Linux. Shell, shared parts, and Map Cleaner. |
 | `Mapping_Tools.Core.Tests` | `net10.0` | Runs on any operating system. |
 | `Mapping_Tools.Avalonia.Tests` | `net10.0` | Draws the Avalonia controls with no screen. Runs on Linux. |
 | `Mapping_Tools_Tests` | `net10.0-windows` | Snapping Tools and global hotkeys only. |
 
-`Mapping_Tools.Core` keeps the original `Mapping_Tools.Classes.*` and
-`Mapping_Tools.Components.*` namespaces, so the folder name and the namespace do not
-agree. Do not "fix" this — it keeps the `using` lines of hundreds of files unchanged.
+`Mapping_Tools.Core` keeps the original `Mapping_Tools.Classes.*`,
+`Mapping_Tools.Components.*` and `Mapping_Tools.Viewmodels` namespaces, so the folder
+name and the namespace do not agree. Do not "fix" this — it keeps the `using` lines of
+hundreds of files unchanged.
+
+The view models are shared. 11 of them live in `Mapping_Tools.Core/Viewmodels/`, and
+both hosts use the same copy. The other 10 are still in `Mapping_Tools/Viewmodels/`,
+held there by WPF types or by a view they name. Section 3.1 of
+[LINUX_PORT.md](LINUX_PORT.md) lists which, and why.
+
+One trap: XAML `clr-namespace:Mapping_Tools.Viewmodels` now spans two assemblies. A
+XAML file that names a moved view model needs `;assembly=Mapping_Tools.Core` on the
+declaration. `MainWindow.xaml` needs both, so it declares two prefixes.
 
 ## Commands
 
@@ -191,6 +201,11 @@ Two rules that cost time when they are missed:
 - **A converter cannot report a bad value.** Throwing out of `ConvertBack` says nothing
   to the user and writes zero into the source. That is measured, and the table is in
   section 3.1. Use `ValidatedTextBox`.
+
+**Measure a view model by compiling it alone.** Compiling several at once hides the
+answer: when one file fails to bind its declarations, Roslyn never binds the method
+bodies of the others, and their faults stay invisible. A count taken that way is a
+floor, never a total.
 
 Every new control needs a test in `Mapping_Tools.Avalonia.Tests`. The tests draw with
 headless Skia, which is the only way on Linux to catch a missing resource key, a

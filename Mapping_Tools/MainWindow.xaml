@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
     xmlns:viewmodels="clr-namespace:Mapping_Tools.Viewmodels"
+    xmlns:coreVm="clr-namespace:Mapping_Tools.Viewmodels;assembly=Mapping_Tools.Core"
     xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
     xmlns:standard="clr-namespace:Mapping_Tools.Views.Standard"
     d:DataContext="{d:DesignInstance Type=viewmodels:MainWindowVm}"
@@ -39,7 +40,7 @@
         <domain:MapPathStringToCountStringConverter x:Key="MapPathStringToCountStringConverter" />
         <domain:MapPathStringAddNewLinesConverter x:Key="MapPathStringAddNewLinesConverter" />
         <domain:MapPathStringJustFilenameConverter x:Key="MapPathStringJustFilenameConverter" />
-        <DataTemplate DataType="{x:Type viewmodels:StandardVm}">
+        <DataTemplate DataType="{x:Type coreVm:StandardVm}">
             <standard:StandardView DataContext="{Binding}" />
         </DataTemplate>
     </Window.Resources>

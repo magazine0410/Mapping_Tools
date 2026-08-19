@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 using Mapping_Tools.Classes.SystemTools;
+using Mapping_Tools.Classes.SystemTools.Platform;
 using Mapping_Tools.Components.Domain;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -26,7 +27,7 @@ namespace Mapping_Tools.Viewmodels {
             ImportLoadCommand = new CommandImplementation(
                 _ => {
                     try {
-                        string path = IOHelper.GetCurrentBeatmap();
+                        string path = CorePlatform.FileDialogs.FetchBeatmapFromClient();
                         if (path != "") {
                             ImportPath = path;
                         }
@@ -37,7 +38,7 @@ namespace Mapping_Tools.Viewmodels {
 
             ImportBrowseCommand = new CommandImplementation(
                 _ => {
-                    string[] paths = IOHelper.BeatmapFileDialog(restore: !SettingsManager.Settings.CurrentBeatmapDefaultFolder);
+                    string[] paths = CorePlatform.FileDialogs.BeatmapFileDialog();
                     if( paths.Length != 0 ) {
                         ImportPath = paths[0];
                     }
@@ -46,7 +47,7 @@ namespace Mapping_Tools.Viewmodels {
             ExportLoadCommand = new CommandImplementation(
                 _ => {
                     try {
-                        string path = IOHelper.GetCurrentBeatmap();
+                        string path = CorePlatform.FileDialogs.FetchBeatmapFromClient();
                         if (path != "") {
                             ExportPath = path;
                         }
@@ -59,7 +60,7 @@ namespace Mapping_Tools.Viewmodels {
                 _ => {
                     string importPathDirectory = Directory.GetParent(ImportPath).FullName;
                     
-                    string[] paths = IOHelper.BeatmapFileDialog(importPathDirectory, true);
+                    string[] paths = CorePlatform.FileDialogs.BeatmapFileDialog(importPathDirectory, true);
                     if ( paths.Length != 0 ) {
                         ExportPath = string.Join("|", paths);
                     }

@@ -25,4 +25,9 @@
     <ProjectReference Include="..\Mapping_Tools.Core\Mapping_Tools.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The tests drive the run logic of a tool without a button to click. -->
+    <InternalsVisibleTo Include="Mapping_Tools.Avalonia.Tests" />
+  </ItemGroup>
+
 </Project>

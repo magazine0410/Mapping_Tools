@@ -7,8 +7,8 @@ Assessed version: 1.12.30 (`net10.0-windows`, WPF and WinForms)
 
 ## Status
 
-**The core split is done**, and so are the first two steps of the Avalonia port: the
-shell, and the shared parts that every view needs. See "Current state" below. The rest
+**The core split is done**, and so are the first three steps of the Avalonia port: the
+shell, the shared parts, and the first tool. See "Current state" below. The rest
 of this document is the plan, and it still holds. Effort figures for finished items now
 say DONE.
 
@@ -66,7 +66,7 @@ dotnet run --project Mapping_Tools.Avalonia
 |---|---|---|
 | `Mapping_Tools.Core` | `net10.0` | 219 files, 47,977 lines. Portable. |
 | `Mapping_Tools` | `net10.0-windows` | 222 files, 26,265 lines. WPF and Windows only. |
-| `Mapping_Tools.Avalonia` | `net10.0` | The Linux host. Shell and shared parts, no tool views yet. |
+| `Mapping_Tools.Avalonia` | `net10.0` | The Linux host. Shell, shared parts, and Map Cleaner. |
 | `Mapping_Tools.Core.Tests` | `net10.0` | 13 files. Runs anywhere. |
 | `Mapping_Tools.Avalonia.Tests` | `net10.0` | Draws the controls with no screen. Runs on Linux. |
 | `Mapping_Tools_Tests` | `net10.0-windows` | 3 files. Snapping Tools and hotkeys. |
@@ -158,8 +158,8 @@ and it stays the most likely source of quiet faults.
 
 ### What is not done
 
-- The Avalonia tool views (3.1). The shell and the shared parts run. No tool view is
-  ported yet, and the view models still sit in the WPF project.
+- The Avalonia tool views (3.1). Map Cleaner is ported. 20 tools are not. 10 of the
+  21 view models still sit in the WPF project.
 - EditorReader on Linux (3.2). The interface is there, and `NullEditorReaderService`
   reads the file on disk instead. No Linux reader exists.
 - Global hotkeys (3.3), image processing (3.4), the updater (3.6), the release job (3.7).
@@ -289,14 +289,13 @@ tools. No compiler will find this problem. Only a test with real beatmaps will f
 
 ## 3. Much work, or a complete overhaul
 
-### 3.1 The WPF user interface — 2 to 4 months (shell and shared parts DONE)
+### 3.1 The WPF user interface — 2 to 4 months (steps 1 to 3 started)
 
 WPF has no Linux renderer, and it will never have one. The move is to Avalonia UI.
 
-**The shell exists**, and so do the shared parts that every view needs.
-`Mapping_Tools.Avalonia` builds and runs natively on Linux, with no WINE. It finds
-tools by reflection, lists them, and shows the one that is chosen. No tool views are
-ported yet.
+**The shell exists**, so do the shared parts that every view needs, and **Map Cleaner
+runs**. `Mapping_Tools.Avalonia` builds and runs natively on Linux, with no WINE. It
+finds tools by reflection, lists them, and shows the one that is chosen.
 
 #### The look: Fluent
 
@@ -353,6 +352,45 @@ test in `Mapping_Tools.Avalonia.Tests`.
 | `ViewHeaderComponent` | the tool title and its description bubble |
 | `Dialogs/` | MessageDialog, TypeValueDialog, BeatmapImportDialog |
 
+#### What step 3 built
+
+**The view models moved.** They sat in the WPF project, so no Avalonia view could use
+one. They are now in `Mapping_Tools.Core/Viewmodels/`, and they keep the namespace
+`Mapping_Tools.Viewmodels`, so the WPF views need no edit. Both hosts share one copy,
+and the two cannot drift apart.
+
+11 of the 21 moved. What held the rest back was measured by compiling each view model
+by itself against the core, one at a time. Compiling them together hides the answer:
+when one file fails to bind its declarations, the method bodies of the others are never
+bound, and their faults never appear. That is the same trap as the first measurement of
+this port.
+
+| Group | Count | View models |
+|---|---|---|
+| Moved, no change | 7 | AutoFailDetector, ComboColourStudio, MapCleaner, Preferences, PropertyTransformer, Standard, TimingHelper |
+| Moved, host calls rewritten | 4 | HitsoundCopier, RhythmGuide, TimingCopier, MapsetMerger |
+| Left: `Visibility` used as data | 5 | HitsoundStudio, MetadataManager, SliderCompletionator, SliderMerger, TumourGenerator |
+| Left: real coupling to a view | 5 | MainWindow, PatternGallery, HitsoundPreviewHelper, Sliderator, SliderPicturator |
+
+`MainWindowVm` should never move. It is shell state, and each shell has its own.
+
+**`IFileDialogService` grew.** The blocker was not WPF types. It was four static classes
+that stayed behind, and only a small part of each was ever used: 4 of the 14 methods of
+`IOHelper`, and 4 members of `MainWindow`. The interface gained `BeatmapFileDialog`,
+`FolderDialog`, `FetchBeatmapFromClient`, the current-beatmap list and its event.
+
+`ICoreSettings` needed nothing. `CurrentBeatmapDefaultFolder` only ever chose the
+starting folder of a file dialog, so it belongs inside the host, not in the interface.
+`FavoriteTools` and `OsuConfigPath` are used only by view models that stay behind.
+
+**Two faults in the core came out of this**, both of which the WPF host hid:
+
+- `BeatmapEditor.GenerateBetterSaveMd5` wrote into the application data folder without
+  making it first. The WPF main window makes that folder when it starts, so only a
+  second host finds the fault.
+- `ProjectManager.LoadProject` wrote a stack trace to the console every time a tool
+  opened for the first time. No auto-save file yet is the normal state, not a fault.
+
 #### Why validation needed a control, not a converter
 
 Avalonia has no `Binding.ValidationRules`. Three ways to report a bad value from a
@@ -384,6 +422,7 @@ Throwing is the worst of the four: it says nothing and it wipes the source. So
 | `BitmapSource`, `InteropBitmap` | 20 + 4 | To Avalonia `Bitmap`. Joins the work in 3.4. |
 | `DataGridComboBoxColumn` | 4 | **Avalonia has no such column.** Use `DataGridTemplateColumn`. |
 | `DrawerHost`, `Snackbar` | 2, 1 | The main window already draws its own list panel and its own message bar. |
+| `TimeLine` | 6 files, 290 lines | Map Cleaner draws one under itself, to show which timing points changed. Not ported, so the Avalonia Map Cleaner has no timeline. |
 
 Surface to port, without the deferred Snapping Tools: **5,303 lines of XAML and
 17,150 lines of C#**, plus the main window.
@@ -393,9 +432,8 @@ Surface to port, without the deferred Snapping Tools: **5,303 lines of XAML and
 1. **Shell. DONE.** App, main window, tool discovery, platform services.
 2. **Shared parts. DONE.** Converters, validation, `PopupBox`, `DialogHost`,
    `ViewHeaderComponent`, the dialogs, and the Material to Fluent key map.
-3. **Simple tools.** Map Cleaner, Metadata Manager, Property Transformer, Timing Helper,
-   Hitsound Copier. These prove the pattern. The view models come with them: they sit in
-   the WPF project today, and a shared home must be picked before the first one moves.
+3. **Simple tools. Map Cleaner DONE.** Then Property Transformer, Timing Helper,
+   Hitsound Copier, Metadata Manager. The view models are in the core now.
 4. **The rest of the standard tools.** Timing Copier, Rhythm Guide, Mapset Merger,
    Combo Colour Studio, Pattern Gallery.
 5. **Drawn tools last.** Graph, then Sliderator and Tumour Generator, which need it.

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -9,6 +9,7 @@ using Mapping_Tools.Classes.BeatmapHelper.BeatDivisors;
 using Mapping_Tools.Classes.BeatmapHelper.Enums;
 using Mapping_Tools.Classes.HitsoundStuff;
 using Mapping_Tools.Classes.SystemTools;
+using Mapping_Tools.Classes.SystemTools.Platform;
 using Mapping_Tools.Components.Domain;
 
 namespace Mapping_Tools.Viewmodels {
@@ -208,7 +209,7 @@ namespace Mapping_Tools.Viewmodels {
             ImportLoadCommand = new CommandImplementation(
                 _ => {
                     try {
-                        string path = IOHelper.GetCurrentBeatmap();
+                        string path = CorePlatform.FileDialogs.FetchBeatmapFromClient();
                         if (path != "") {
                             PathFrom = path;
                         }
@@ -220,7 +221,7 @@ namespace Mapping_Tools.Viewmodels {
 
             ImportBrowseCommand = new CommandImplementation(
                 _ => {
-                    string[] paths = IOHelper.BeatmapFileDialog(restore: !SettingsManager.Settings.CurrentBeatmapDefaultFolder);
+                    string[] paths = CorePlatform.FileDialogs.BeatmapFileDialog();
                     if (paths.Length != 0) {
                         PathFrom = paths[0];
                     }
@@ -229,7 +230,7 @@ namespace Mapping_Tools.Viewmodels {
             ExportLoadCommand = new CommandImplementation(
                 _ => {
                     try {
-                        string path = IOHelper.GetCurrentBeatmap();
+                        string path = CorePlatform.FileDialogs.FetchBeatmapFromClient();
                         if (path != "") {
                             PathTo = path;
                         }
@@ -242,7 +243,7 @@ namespace Mapping_Tools.Viewmodels {
                 _ => {
                     string pathFromDirectory = Directory.GetParent(PathFrom).FullName;
 
-                    string[] paths = IOHelper.BeatmapFileDialog(pathFromDirectory, true);
+                    string[] paths = CorePlatform.FileDialogs.BeatmapFileDialog(pathFromDirectory, true);
                     if (paths.Length != 0) {
                         PathTo = string.Join("|", paths);
                     }

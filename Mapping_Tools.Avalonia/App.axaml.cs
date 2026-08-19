@@ -1,3 +1,4 @@
+using System.IO;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -14,8 +15,14 @@ namespace Mapping_Tools.Avalonia {
             AvaloniaPlatformServices.Register();
 
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
+                // The core writes backups and temporary files here, and expects the
+                // folders to be there already.
+                Directory.CreateDirectory(CorePlatform.Paths.AppDataPath);
+                Directory.CreateDirectory(CorePlatform.Paths.ExportPath);
+
                 var settings = JsonCoreSettings.Load();
                 CorePlatform.Settings = settings;
+                Directory.CreateDirectory(settings.BackupsPath);
 
                 var window = new MainWindow();
                 desktop.MainWindow = window;

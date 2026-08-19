@@ -1,4 +1,4 @@
-﻿using Mapping_Tools.Classes.Tools;
+using Mapping_Tools.Classes.Tools;
 using Mapping_Tools.Classes.SystemTools.Platform;
 using System.Collections.Generic;
 using System.IO;
@@ -50,6 +50,10 @@ namespace Mapping_Tools.Classes.BeatmapHelper {
 
         private static void GenerateBetterSaveMd5(List<string> lines) {
             var tempPath = System.IO.Path.Combine(CorePlatform.Paths.AppDataPath, "temp.osu");
+
+            // The host normally makes this folder when it starts, but a host that has
+            // not run before, or a test, has no folder yet.
+            Directory.CreateDirectory(CorePlatform.Paths.AppDataPath);
 
             if (!File.Exists(tempPath))
             {

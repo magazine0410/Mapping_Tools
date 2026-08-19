@@ -1,12 +1,12 @@
-﻿using Mapping_Tools.Classes;
+using Mapping_Tools.Classes;
 using Mapping_Tools.Classes.SystemTools;
+using Mapping_Tools.Classes.SystemTools.Platform;
 using Mapping_Tools.Components.Domain;
 using Newtonsoft.Json;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Windows.Input;
 
 namespace Mapping_Tools.Viewmodels {
 
@@ -27,14 +27,14 @@ namespace Mapping_Tools.Viewmodels {
 
         public MapsetMergerVm() {
             Mapsets = new ObservableCollection<MapsetItem>();
-            ExportPath = MainWindow.ExportPath;
+            ExportPath = CorePlatform.Paths.ExportPath;
 
             AddMapsetCommand = new CommandImplementation(_ => {
-                string path = MainWindow.AppWindow.GetCurrentMaps().FirstOrDefault() ?? string.Empty;
+                string path = CorePlatform.FileDialogs.GetCurrentBeatmaps().FirstOrDefault() ?? string.Empty;
 
-                if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift)) {
+                if (CorePlatform.IsShiftDown()) {
                     try {
-                        path = IOHelper.GetCurrentBeatmap();
+                        path = CorePlatform.FileDialogs.FetchBeatmapFromClient();
                     } catch (Exception ex) {
                         ex.Show();
                     }
@@ -59,7 +59,7 @@ namespace Mapping_Tools.Viewmodels {
 
             BrowseExportPathCommand = new CommandImplementation(_ => {
                 try {
-                    string path = IOHelper.FolderDialog();
+                    string path = CorePlatform.FileDialogs.FolderDialog();
                     if (path != "") {
                         ExportPath = path;
                     }
@@ -97,7 +97,7 @@ namespace Mapping_Tools.Viewmodels {
             public MapsetItem() {
                 BrowseCommand = new CommandImplementation(_ => {
                     try {
-                        string path = IOHelper.FolderDialog();
+                        string path = CorePlatform.FileDialogs.FolderDialog();
                         if (path != "") {
                             Path = path;
                         }

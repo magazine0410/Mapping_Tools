@@ -1,4 +1,4 @@
-﻿using Mapping_Tools.Classes.SystemTools.Platform;
+using Mapping_Tools.Classes.SystemTools.Platform;
 using Newtonsoft.Json;
 using System;
 using System.IO;
@@ -88,6 +88,11 @@ namespace Mapping_Tools.Classes.SystemTools {
 
             // If the file name is not an empty string open it for saving.  
             if (path == "") return;
+
+            // No auto-save file yet is the normal state the first time a tool opens.
+            // It is not a fault, so it does not go to the console as one.
+            if (!dialog && !File.Exists(path)) return;
+
             try {
                 T project = LoadJson<T>(path);
 
