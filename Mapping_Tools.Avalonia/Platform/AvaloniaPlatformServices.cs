@@ -139,13 +139,19 @@ namespace Mapping_Tools.Avalonia.Platform {
         public void OpenFolder(string path) {
             if (string.IsNullOrEmpty(path)) return;
             try {
-                var opener = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "explorer"
-                    : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open"
-                    : "xdg-open";
-                Process.Start(new ProcessStartInfo(opener, path) { UseShellExecute = false });
+                Process.Start(CreateOpenFolderStartInfo(path));
             } catch (Exception e) {
                 Debug.WriteLine($"Could not open the folder \"{path}\": {e.Message}");
             }
+        }
+
+        internal static ProcessStartInfo CreateOpenFolderStartInfo(string path) {
+            var opener = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "explorer"
+                : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open"
+                : "xdg-open";
+            var startInfo = new ProcessStartInfo(opener) { UseShellExecute = false };
+            startInfo.ArgumentList.Add(path);
+            return startInfo;
         }
     }
 

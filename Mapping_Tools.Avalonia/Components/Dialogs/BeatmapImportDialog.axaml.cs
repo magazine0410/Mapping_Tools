@@ -34,10 +34,14 @@ namespace Mapping_Tools.Components.Dialogs {
         }
 
         private void BeatmapBrowse_Click(object sender, RoutedEventArgs e) {
+            BrowseBeatmap();
+        }
+
+        internal void BrowseBeatmap() {
             try {
-                var chosen = CorePlatform.FileDialogs.GetCurrentBeatmap();
-                if (!string.IsNullOrEmpty(chosen)) {
-                    Path = chosen;
+                var chosen = CorePlatform.FileDialogs.BeatmapFileDialog();
+                if (chosen.Length > 0 && !string.IsNullOrEmpty(chosen[0])) {
+                    Path = chosen[0];
                 }
             } catch (Exception ex) {
                 ex.Show();

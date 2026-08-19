@@ -1,8 +1,10 @@
 using Mapping_Tools.Classes.SystemTools.Platform;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using Mapping_Tools.Classes.JsonConverters;
 
@@ -19,6 +21,7 @@ namespace Mapping_Tools.Classes.SystemTools {
             NullValueHandling = NullValueHandling.Ignore,
             TypeNameHandling = TypeNameHandling.Objects,
             TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+            SerializationBinder = new ProjectSerializationBinder(),
             Formatting = Formatting.Indented,
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore, 
             Converters = { new Vector2Converter()}
@@ -87,7 +90,7 @@ namespace Mapping_Tools.Classes.SystemTools {
             string path = dialog ? CorePlatform.FileDialogs.LoadProjectDialog(view.DefaultSaveFolder) : view.AutoSavePath;
 
             // If the file name is not an empty string open it for saving.  
-            if (path == "") return;
+            if (string.IsNullOrEmpty(path)) return;
 
             // No auto-save file yet is the normal state the first time a tool opens.
             // It is not a fault, so it does not go to the console as one.
@@ -145,6 +148,7 @@ namespace Mapping_Tools.Classes.SystemTools {
                 Directory.CreateDirectory(view.DefaultSaveFolder);
             string path = dialog ? CorePlatform.FileDialogs.LoadProjectDialog(view.DefaultSaveFolder) : view.AutoSavePath;
 
+            if (string.IsNullOrEmpty(path)) return default;
             return LoadJson<T>(path);
         }
 
@@ -153,6 +157,7 @@ namespace Mapping_Tools.Classes.SystemTools {
                 Directory.CreateDirectory(view.DefaultSaveFolder);
             string path = dialog ? CorePlatform.FileDialogs.SaveProjectDialog(view.DefaultSaveFolder) : view.AutoSavePath;
 
+            if (string.IsNullOrEmpty(path)) return;
             SaveJson(path, obj);
         }
 
@@ -161,6 +166,7 @@ namespace Mapping_Tools.Classes.SystemTools {
                 Directory.CreateDirectory(view.DefaultSaveFolder);
             string path = dialog ? CorePlatform.FileDialogs.LoadProjectDialog(view.DefaultSaveFolder) : view.AutoSavePath;
 
+            if (string.IsNullOrEmpty(path)) return default;
             return LoadJson<T2>(path);
         }
 
@@ -172,6 +178,50 @@ namespace Mapping_Tools.Classes.SystemTools {
             return type.GetInterfaces().Any(x =>
                 x.IsGenericType &&
                 x.GetGenericTypeDefinition() == typeof(ISavable<>));
+        }
+
+        /// <summary>
+        /// Resolves project types written before the portable core was split out of
+        /// the Windows application. Those files name the old "Mapping Tools"
+        /// assembly even though the types now live in Mapping_Tools.Core.
+        /// </summary>
+        private sealed class ProjectSerializationBinder : ISerializationBinder {
+            private const string LegacyAssemblyName = "Mapping Tools";
+
+            public Type BindToType(string assemblyName, string typeName) {
+                var simpleAssemblyName = string.IsNullOrEmpty(assemblyName)
+                    ? null
+                    : new AssemblyName(assemblyName).Name;
+
+                if (simpleAssemblyName == LegacyAssemblyName) {
+                    var coreType = typeof(ProjectManager).Assembly.GetType(typeName, false);
+                    if (coreType is not null) return coreType;
+                }
+
+                var assembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(candidate =>
+                        candidate.GetName().Name == simpleAssemblyName);
+
+                if (assembly is null && !string.IsNullOrEmpty(assemblyName)) {
+                    try {
+                        assembly = Assembly.Load(new AssemblyName(assemblyName));
+                    } catch {
+                        // Report one consistent serialization error below.
+                    }
+                }
+
+                var resolvedType = assembly?.GetType(typeName, false);
+                if (resolvedType is not null) return resolvedType;
+
+                throw new JsonSerializationException(
+                    $"Could not resolve project type '{typeName}' from assembly '{assemblyName}'.");
+            }
+
+            public void BindToName(Type serializedType, out string assemblyName,
+                out string typeName) {
+                assemblyName = serializedType.Assembly.GetName().Name;
+                typeName = serializedType.FullName;
+            }
         }
     }
 }

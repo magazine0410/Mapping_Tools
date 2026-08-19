@@ -5,6 +5,7 @@ using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Mapping_Tools.Avalonia.Views;
 using Mapping_Tools.Avalonia.Views.MapCleaner;
+using Mapping_Tools.Classes.SystemTools;
 using Mapping_Tools.Classes.SystemTools.Platform;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -106,6 +107,66 @@ namespace Mapping_Tools.Avalonia.Tests {
             Assert.IsTrue(view.CanRun, "The tool locked itself with nothing to do.");
         }
 
+        [TestMethod]
+        public void ItWarnsButStillCleansWhenTheBackupFails() {
+            // The WPF host reads no result from SaveMapBackup, so this host must not
+            // either. The user is warned by the backup itself, and the run goes on.
+            var path = CopyTestMap("ComplicatedTestMap.osu");
+            var previousSettings = CorePlatform.Settings;
+            var previousDialogs = CorePlatform.Dialogs;
+            var dialogs = new RecordingDialogService();
+
+            CorePlatform.Settings = new TestSettings {
+                MakeBackups = true,
+                // A folder that is not there, so the backup cannot be written.
+                BackupsPath = Path.Combine(Path.GetTempPath(), $"mt-{Guid.NewGuid():N}")
+            };
+            CorePlatform.Dialogs = dialogs;
+
+            try {
+                var before = File.ReadAllText(path);
+                var view = new CleanerView();
+                HeadlessApp.Show(view);
+                view.ViewModel.Paths = new[] { path };
+
+                var message = CleanerView.RunProgram(view.ViewModel, null);
+
+                Assert.IsTrue(message.StartsWith("Successfully "),
+                    $"The tool said: {message}");
+                Assert.AreNotEqual(before, File.ReadAllText(path),
+                    "The beatmap was not cleaned.");
+            } finally {
+                CorePlatform.Settings = previousSettings;
+                CorePlatform.Dialogs = previousDialogs;
+                File.Delete(path);
+            }
+        }
+
+        [TestMethod]
+        public void AFailedBackupTellsTheUserWhy() {
+            var path = CopyTestMap("ComplicatedTestMap.osu");
+            var previousSettings = CorePlatform.Settings;
+            var previousDialogs = CorePlatform.Dialogs;
+            var dialogs = new RecordingDialogService();
+
+            CorePlatform.Settings = new TestSettings {
+                MakeBackups = true,
+                BackupsPath = Path.Combine(Path.GetTempPath(), $"mt-{Guid.NewGuid():N}")
+            };
+            CorePlatform.Dialogs = dialogs;
+
+            try {
+                Assert.IsFalse(BackupManager.SaveMapBackup(new[] { path }),
+                    "The backup reported success with no folder to write to.");
+                Assert.AreEqual("Error", dialogs.LastTitle,
+                    "The user was not told that the backup failed.");
+            } finally {
+                CorePlatform.Settings = previousSettings;
+                CorePlatform.Dialogs = previousDialogs;
+                File.Delete(path);
+            }
+        }
+
         private class RecordingDialogService : IDialogService {
             public string LastTitle { get; private set; }
 
@@ -113,6 +174,16 @@ namespace Mapping_Tools.Avalonia.Tests {
             public bool AskYesNo(string message, string title = null) => false;
             public bool? AskYesNoCancel(string message, string title = null) => null;
             public bool ShowOkCancel(string message, string title = null) => false;
+        }
+
+        private class TestSettings : ICoreSettings {
+            public string OsuPath { get; set; } = string.Empty;
+            public string SongsPath { get; set; } = string.Empty;
+            public string BackupsPath { get; set; } = string.Empty;
+            public bool MakeBackups { get; set; }
+            public int MaxBackupFiles { get; set; } = 1000;
+            public bool UseEditorReader { get; set; }
+            public bool AutoReload { get; set; }
         }
     }
 }

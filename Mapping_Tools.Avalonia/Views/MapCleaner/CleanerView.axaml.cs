@@ -60,6 +60,9 @@ namespace Mapping_Tools.Avalonia.Views.MapCleaner {
             // does not always take the focus away, so ask for the write here.
             BeatDivisorsBox.Commit();
 
+            // The result is on purpose not read. A failed backup already tells the user
+            // why, and then the run goes on. That is what the WPF host does, and the two
+            // hosts must not disagree about it. See PORT_ROADMAP.md.
             BackupManager.SaveMapBackup(paths);
 
             ViewModel.Paths = paths;

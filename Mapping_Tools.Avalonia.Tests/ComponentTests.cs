@@ -2,6 +2,7 @@ using System;
 using Avalonia.Controls;
 using Mapping_Tools.Components;
 using Mapping_Tools.Components.Dialogs;
+using Mapping_Tools.Classes.SystemTools.Platform;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Mapping_Tools.Avalonia.Tests {
@@ -94,6 +95,28 @@ namespace Mapping_Tools.Avalonia.Tests {
             Assert.AreEqual("/home/me/maps/song.osu", dialog.Path);
         }
 
+        [TestMethod]
+        public void TheBeatmapImportBrowseButtonAlwaysOpensThePicker() {
+            var previous = CorePlatform.FileDialogs;
+            var fileDialogs = new RecordingFileDialogService {
+                CurrentBeatmap = "/maps/already-open.osu",
+                PickedBeatmap = "/maps/new-choice.osu"
+            };
+            CorePlatform.FileDialogs = fileDialogs;
+
+            try {
+                var dialog = new BeatmapImportDialog();
+                HeadlessApp.Show(dialog);
+
+                dialog.BrowseBeatmap();
+
+                Assert.AreEqual(1, fileDialogs.BrowseCount);
+                Assert.AreEqual("/maps/new-choice.osu", dialog.Path);
+            } finally {
+                CorePlatform.FileDialogs = previous;
+            }
+        }
+
         private class FakeTool : UserControl {
             public static readonly string ToolName = "Map Cleaner";
             public static readonly string ToolDescription =
@@ -104,6 +127,34 @@ namespace Mapping_Tools.Avalonia.Tests {
         private class QuietTool : UserControl {
             public static readonly string ToolName = "Get started";
             public static readonly string ToolDescription = "";
+        }
+
+        private class RecordingFileDialogService : IFileDialogService {
+            public string CurrentBeatmap { get; set; }
+            public string PickedBeatmap { get; set; }
+            public int BrowseCount { get; private set; }
+
+            public string LoadProjectDialog(string initialDirectory = null) => null;
+            public string SaveProjectDialog(string initialDirectory = null) => null;
+            public string GetCurrentBeatmap() => CurrentBeatmap;
+            public string[] GetCurrentBeatmaps() => string.IsNullOrEmpty(CurrentBeatmap)
+                ? Array.Empty<string>()
+                : new[] { CurrentBeatmap };
+            public void SetCurrentBeatmaps(params string[] paths) {
+                CurrentBeatmap = paths is { Length: > 0 } ? paths[0] : null;
+                CurrentBeatmapsChanged?.Invoke(this, paths ?? Array.Empty<string>());
+            }
+            public event EventHandler<string[]> CurrentBeatmapsChanged;
+            public string FetchBeatmapFromClient() => string.Empty;
+            public string[] BeatmapFileDialog(bool multiselect = false) {
+                BrowseCount++;
+                return string.IsNullOrEmpty(PickedBeatmap)
+                    ? Array.Empty<string>()
+                    : new[] { PickedBeatmap };
+            }
+            public string[] BeatmapFileDialog(string initialDirectory,
+                bool multiselect = false) => BeatmapFileDialog(multiselect);
+            public string FolderDialog(string initialDirectory = null) => string.Empty;
         }
     }
 }

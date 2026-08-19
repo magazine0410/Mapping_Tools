@@ -56,14 +56,26 @@ jobs:
             -replace '(?<=#define\s+MyAppVersion\s+")\d+\.\d+\.\d+(?=")', "${env:VERSION}" `
             | Set-Content Installer_Script_x64.iss -Encoding UTF8
 
-      - name: Set AssemblyVersion/FileVersion in csproj
+      # Every project reads its version from Directory.Build.props, so this one file
+      # sets the version of the WPF host and of the Avalonia host together.
+      - name: Set the version in Directory.Build.props
         shell: pwsh
         run: |
-          $p = "Mapping_Tools/Mapping_Tools.csproj"
+          $p = "Directory.Build.props"
           $c = Get-Content -Raw $p
-          $c = $c -replace '(?<=<AssemblyVersion>)\d+\.\d+\.\d+', "${env:VERSION}"
-          $c = $c -replace '(?<=<FileVersion>)\d+\.\d+\.\d+', "${env:VERSION}"
+          $patterns = @('(?<=<Version>)\d+\.\d+\.\d+',
+                        '(?<=<AssemblyVersion>)\d+\.\d+\.\d+',
+                        '(?<=<FileVersion>)\d+\.\d+\.\d+')
+          foreach ($pattern in $patterns) {
+            # A silent no-match once shipped a release stamped with the old version.
+            if ($c -notmatch $pattern) {
+              throw "No match for $pattern in $p. The version was not set."
+            }
+            $c = $c -replace $pattern, "${env:VERSION}"
+          }
           $c | Set-Content $p -Encoding UTF8
+          Write-Host "Version set to ${env:VERSION}:"
+          Get-Content $p
 
       - name: Publish x86
         run: dotnet publish Mapping_Tools -c Release -r win-x86 --no-restore --self-contained true
