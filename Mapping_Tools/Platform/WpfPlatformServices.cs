@@ -23,6 +23,7 @@ namespace Mapping_Tools.Platform {
             CorePlatform.EditorReader = new WpfEditorReaderService();
             CorePlatform.Settings = new WpfCoreSettings();
             CorePlatform.FileDialogs = new WpfFileDialogService();
+            CorePlatform.Shell = new WindowsShellService();
             CorePlatform.IsShiftDown = () =>
                 Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
 
@@ -69,6 +70,11 @@ namespace Mapping_Tools.Platform {
         public int MaxBackupFiles => SettingsManager.Settings.MaxBackupFiles;
         public bool UseEditorReader => SettingsManager.Settings.UseEditorReader;
         public bool AutoReload => SettingsManager.Settings.AutoReload;
+    }
+
+    public class WindowsShellService : IShellService {
+        public void OpenFolder(string path) =>
+            System.Diagnostics.Process.Start("explorer.exe", path);
     }
 
     public class WpfFileDialogService : IFileDialogService {

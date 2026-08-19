@@ -16,6 +16,7 @@ namespace Mapping_Tools.Classes.SystemTools.Platform {
         private static IEditorReaderService editorReader = new NullEditorReaderService();
         private static ICoreSettings settings = new DefaultCoreSettings();
         private static IFileDialogService fileDialogs = new NullFileDialogService();
+        private static IShellService shell = new NullShellService();
 
         public static IDialogService Dialogs {
             get => dialogs;
@@ -45,6 +46,11 @@ namespace Mapping_Tools.Classes.SystemTools.Platform {
         public static IFileDialogService FileDialogs {
             get => fileDialogs;
             set => fileDialogs = value ?? new NullFileDialogService();
+        }
+
+        public static IShellService Shell {
+            get => shell;
+            set => shell = value ?? new NullShellService();
         }
 
         /// <summary>

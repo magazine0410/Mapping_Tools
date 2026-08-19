@@ -19,7 +19,11 @@ namespace Mapping_Tools.Classes {
         /// <summary>
         /// Shows the exception, and then each inner exception, until the user cancels.
         /// </summary>
-        /// <returns>True if the user accepted every message.</returns>
+        /// <returns>
+        /// False if the user cancelled the <em>first</em> message. True in every other
+        /// case, including a cancel of an inner message. This matches the behaviour
+        /// before the core split, where the caller only acted on the first answer.
+        /// </returns>
         public static bool Show(this Exception exception) {
             if (!CorePlatform.Dialogs.ShowOkCancel(exception.MessageStackTrace(), "Error")) return false;
             var ex = exception.InnerException;

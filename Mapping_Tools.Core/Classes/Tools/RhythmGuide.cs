@@ -150,8 +150,8 @@ namespace Mapping_Tools.Classes.Tools {
 
                     var editor = new Editor {TextFile = beatmap, Path = args.ExportPath};
                     editor.SaveFile();
-                    System.Diagnostics.Process.Start("explorer.exe", Path.GetDirectoryName(args.ExportPath) ??
-                                                                     throw new ArgumentException("Export path must be a file."));
+                    CorePlatform.Shell.OpenFolder(Path.GetDirectoryName(args.ExportPath) ??
+                                                  throw new ArgumentException("Export path must be a file."));
                     break;
                 case ExportMode.AddToMap:
                     var editor2 = CorePlatform.EditorReader.GetNewestVersionOrNot(args.ExportPath, reader);

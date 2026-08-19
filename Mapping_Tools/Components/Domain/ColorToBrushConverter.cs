@@ -20,9 +20,15 @@ namespace Mapping_Tools.Components.Domain
         /// <returns></returns>
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is Color color)
+            switch (value)
             {
-                return new SolidColorBrush(color);
+                case Color color:
+                    return new SolidColorBrush(color);
+                // The core holds colours as System.Drawing.Color, because
+                // System.Windows.Media.Color is part of WPF.
+                case System.Drawing.Color drawingColor:
+                    return new SolidColorBrush(Color.FromArgb(
+                        drawingColor.A, drawingColor.R, drawingColor.G, drawingColor.B));
             }
             return Binding.DoNothing;
         }
@@ -39,9 +45,17 @@ namespace Mapping_Tools.Components.Domain
         {
             if (value is SolidColorBrush brush)
             {
+                // Give back the type that the binding source holds.
+                if (targetType == typeof(System.Drawing.Color))
+                {
+                    return System.Drawing.Color.FromArgb(
+                        brush.Color.A, brush.Color.R, brush.Color.G, brush.Color.B);
+                }
                 return brush.Color;
             }
-            return default(Color);
+            return targetType == typeof(System.Drawing.Color)
+                ? default(System.Drawing.Color)
+                : default(Color);
         }
     }
 }
