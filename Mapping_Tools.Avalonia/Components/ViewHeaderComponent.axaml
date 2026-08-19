@@ -1,0 +1,20 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Mapping_Tools.Components"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             x:Class="Mapping_Tools.Components.ViewHeaderComponent">
+    <StackPanel x:Name="MainPanel" Orientation="Horizontal">
+        <TextBlock x:Name="HeaderTextBlock"
+                   FontSize="32" FontWeight="Bold"
+                   VerticalAlignment="Center" Margin="0,0,5,0"
+                   Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+
+        <c:PopupBox x:Name="DescriptionIcon" Margin="5" VerticalAlignment="Center">
+            <c:PopupBox.ToggleContent>
+                <icons:MaterialIcon Kind="HelpCircle" Width="24" Height="24"
+                                    Foreground="{DynamicResource SecondaryAccentBrush}"/>
+            </c:PopupBox.ToggleContent>
+            <TextBlock x:Name="DescriptionTextBlock" TextWrapping="Wrap" MaxWidth="600" Padding="5"/>
+        </c:PopupBox>
+    </StackPanel>
+</UserControl>

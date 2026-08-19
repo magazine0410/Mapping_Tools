@@ -1,0 +1,74 @@
+<!--
+  The looks of the controls that the port had to write itself.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:Mapping_Tools.Components"
+        xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain">
+
+    <Styles.Resources>
+        <domain:BooleanInvertConverter x:Key="BooleanInvertConverter"/>
+
+        <!-- ==== PopupBox ==== -->
+        <ControlTheme x:Key="{x:Type c:PopupBox}" TargetType="c:PopupBox">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Panel>
+                        <ToggleButton x:Name="PART_Toggle"
+                                      Theme="{StaticResource IconButton}"
+                                      Padding="2"
+                                      Content="{TemplateBinding ToggleContent}"
+                                      IsChecked="{Binding IsPopupOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"/>
+
+                        <Popup x:Name="PART_Popup"
+                               PlacementTarget="{Binding #PART_Toggle}"
+                               Placement="{TemplateBinding Placement}"
+                               HorizontalOffset="0" VerticalOffset="4"
+                               IsLightDismissEnabled="{Binding StaysOpen, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BooleanInvertConverter}}"
+                               IsOpen="{Binding IsPopupOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                            <Border Background="{DynamicResource MaterialDesignCardBackground}"
+                                    BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="8"
+                                    BoxShadow="0 4 12 0 #40000000">
+                                <ContentPresenter Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                            </Border>
+                        </Popup>
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+
+        <!-- ==== DialogHost ==== -->
+        <ControlTheme x:Key="{x:Type c:DialogHost}" TargetType="c:DialogHost">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Panel>
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"/>
+
+                        <!-- The screen behind the dialog. It also swallows the clicks. -->
+                        <Border x:Name="PART_DialogOverlay"
+                                Background="#99000000"
+                                IsVisible="{TemplateBinding IsOpen}">
+                            <Border Background="{DynamicResource MaterialDesignCardBackground}"
+                                    BorderBrush="{DynamicResource MaterialDesignDivider}"
+                                    BorderThickness="1"
+                                    CornerRadius="4"
+                                    Padding="0"
+                                    MaxWidth="640"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    BoxShadow="0 8 24 0 #60000000">
+                                <ContentPresenter Content="{TemplateBinding DialogContent}"/>
+                            </Border>
+                        </Border>
+                    </Panel>
+                </ControlTemplate>
+            </Setter>
+        </ControlTheme>
+    </Styles.Resources>
+
+</Styles>

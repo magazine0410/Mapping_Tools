@@ -15,7 +15,9 @@ crosses the Windows boundary — it holds the porting plan and the current state
 |---|---|---|
 | `Mapping_Tools.Core` | `net10.0` | Portable logic. Beatmap parser, math, hitsounds, tool algorithms. |
 | `Mapping_Tools` | `net10.0-windows` | WPF host. Views, view models, Windows-only services. |
+| `Mapping_Tools.Avalonia` | `net10.0` | Avalonia host, for Linux. Shell and shared parts. No tool views yet. |
 | `Mapping_Tools.Core.Tests` | `net10.0` | Runs on any operating system. |
+| `Mapping_Tools.Avalonia.Tests` | `net10.0` | Draws the Avalonia controls with no screen. Runs on Linux. |
 | `Mapping_Tools_Tests` | `net10.0-windows` | Snapping Tools and global hotkeys only. |
 
 `Mapping_Tools.Core` keeps the original `Mapping_Tools.Classes.*` and
@@ -32,6 +34,16 @@ dotnet build Mapping_Tools.Core/Mapping_Tools.Core.csproj
 
 ```bash
 dotnet test Mapping_Tools.Core.Tests/Mapping_Tools.Core.Tests.csproj
+```
+
+Run the Avalonia host, and its tests. Both work on Linux:
+
+```bash
+dotnet run --project Mapping_Tools.Avalonia/Mapping_Tools.Avalonia.csproj
+```
+
+```bash
+dotnet test Mapping_Tools.Avalonia.Tests/Mapping_Tools.Avalonia.Tests.csproj
 ```
 
 Run one test, or one test class:
@@ -148,6 +160,42 @@ interface. Do not reach back into the WPF project.**
   plain `NAudio` to the core.
 - `Overlay.NET` and `Process.NET` are .NET Framework only. They belong to Snapping Tools.
 - Use `Path.Combine`, never a `\` in a path string. Linux treats `\` as part of the name.
+
+## Porting a view from WPF to Avalonia
+
+Read section 3.1 of [LINUX_PORT.md](LINUX_PORT.md) first. It holds the plan, the
+measurements and what is left.
+
+The Avalonia host uses the **Fluent** theme, not Material. `Styles/MaterialCompat.axaml`
+keeps the Material Design key names alive over Fluent, so the colours and the styles of
+a WPF view need no rewrite, only the changes in this table:
+
+| WPF | Avalonia |
+|---|---|
+| `Style="{StaticResource X}"` | `Theme="{StaticResource X}"` — Avalonia has no keyed `Style` |
+| `materialDesign:HintAssist.Hint="X"` | `PlaceholderText="X"` — **not** `Watermark`, which Avalonia 12 marks obsolete |
+| `Visibility="{Binding ...}"` | `IsVisible="{Binding ...}"` — a boolean, so the visibility converters now give booleans |
+| `materialDesign:PackIcon` | `icons:MaterialIcon`, same `Kind` values |
+| `materialDesign:PopupBox` | `c:PopupBox`, same `ToggleContent` and `StaysOpen` |
+| `materialDesign:DialogHost` | `c:DialogHost`, same `ShowDialog` and `CloseDialogCommand` |
+| `Binding.ValidationRules` | `c:ValidatedTextBox`, and bind `Value`, not `Text` |
+| `DependencyProperty.Register` | `AvaloniaProperty.Register<TOwner, T>` |
+| `OnRender(DrawingContext)` | `Render(DrawingContext)` |
+| `ToolTip="X"` | `ToolTip.Tip="X"` |
+
+Two rules that cost time when they are missed:
+
+- **Do not write your own `InitializeComponent`.** The Avalonia name generator writes
+  one, and it fills the fields for every `x:Name`. A hand-written parameterless version
+  wins the overload and leaves every one of those fields null.
+- **A converter cannot report a bad value.** Throwing out of `ConvertBack` says nothing
+  to the user and writes zero into the source. That is measured, and the table is in
+  section 3.1. Use `ValidatedTextBox`.
+
+Every new control needs a test in `Mapping_Tools.Avalonia.Tests`. The tests draw with
+headless Skia, which is the only way on Linux to catch a missing resource key, a
+template that does not build, or a binding that refuses a value. A build that succeeds
+proves none of those.
 
 ## How tools are registered
 

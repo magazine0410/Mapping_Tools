@@ -31,6 +31,9 @@ namespace Mapping_Tools.Avalonia {
             var version = Assembly.GetExecutingAssembly().GetName().Version;
             this.FindControl<TextBlock>("VersionText")!.Text = version is null ? string.Empty : $"v{version.ToString(3)}";
 
+            // Controls with no dialog host of their own show their dialogs here.
+            Components.DialogHost.Root = this.FindControl<Components.DialogHost>("RootDialogHost");
+
             LoadTools();
             AvaloniaNotificationService.Sink = ShowSnack;
             Closing += (_, _) => views.AutoSaveSettings();

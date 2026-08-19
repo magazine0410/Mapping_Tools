@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="using:System"
+             xmlns:c="clr-namespace:Mapping_Tools.Components"
+             x:Class="Mapping_Tools.Components.Dialogs.TypeValueDialog">
+    <Grid Margin="16" RowDefinitions="Auto,Auto">
+        <TextBox x:Name="ValueBox" Grid.Row="0"
+                 PlaceholderText="Value" Margin="0,6,0,0" FontSize="18"
+                 Theme="{StaticResource MaterialDesignFloatingHintTextBox}"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,16,0,0">
+            <Button IsDefault="True" Theme="{StaticResource MaterialDesignFlatButton}"
+                    Content="ACCEPT"
+                    Command="{x:Static c:DialogHost.CloseDialogCommand}">
+                <Button.CommandParameter>
+                    <sys:Boolean>True</sys:Boolean>
+                </Button.CommandParameter>
+            </Button>
+            <Button IsCancel="True" Margin="8,0,0,0" Theme="{StaticResource MaterialDesignFlatButton}"
+                    Content="CANCEL"
+                    Command="{x:Static c:DialogHost.CloseDialogCommand}">
+                <Button.CommandParameter>
+                    <sys:Boolean>False</sys:Boolean>
+                </Button.CommandParameter>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

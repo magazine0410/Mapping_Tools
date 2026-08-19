@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="using:System"
+             xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:c="clr-namespace:Mapping_Tools.Components"
+             xmlns:domain="clr-namespace:Mapping_Tools.Components.Domain"
+             x:Class="Mapping_Tools.Components.Dialogs.BeatmapImportDialog">
+    <Grid Margin="16" RowDefinitions="Auto,Auto,Auto">
+        <TextBlock Grid.Row="0" Text="Import from beatmap:"/>
+
+        <Grid Grid.Row="1" Margin="0,6,0,0" ColumnDefinitions="*,Auto">
+            <c:ValidatedTextBox Grid.Column="0" Width="240" MaxWidth="240"
+                                PlaceholderText="Path"
+                                UpdateOnLostFocus="False"
+                                Value="{Binding Path, Mode=TwoWay}">
+                <domain:NotEmptyRule/>
+            </c:ValidatedTextBox>
+
+            <Button Grid.Column="1" Margin="5,0,0,0" Click="BeatmapBrowse_Click"
+                    Theme="{StaticResource IconButton}" VerticalAlignment="Bottom"
+                    ToolTip.Tip="Select a beatmap file.">
+                <icons:MaterialIcon Kind="Folder" Width="30" Height="30"
+                                    Foreground="{DynamicResource PrimaryHueMidBrush}"/>
+            </Button>
+        </Grid>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal"
+                    Margin="0,16,0,0" HorizontalAlignment="Center">
+            <Button IsDefault="True" Theme="{StaticResource MaterialDesignFlatButton}"
+                    Content="ACCEPT"
+                    Command="{x:Static c:DialogHost.CloseDialogCommand}">
+                <Button.CommandParameter>
+                    <sys:Boolean>True</sys:Boolean>
+                </Button.CommandParameter>
+            </Button>
+            <Button IsCancel="True" Margin="8,0,0,0" Theme="{StaticResource MaterialDesignFlatButton}"
+                    Content="CANCEL"
+                    Command="{x:Static c:DialogHost.CloseDialogCommand}">
+                <Button.CommandParameter>
+                    <sys:Boolean>False</sys:Boolean>
+                </Button.CommandParameter>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

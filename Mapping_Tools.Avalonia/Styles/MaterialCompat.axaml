@@ -1,0 +1,161 @@
+<!--
+  A key map from Material Design in XAML (the WPF theme) to Fluent.
+
+  The WPF views name 13 brushes and about 20 styles by key. This dictionary keeps
+  those keys alive, so a ported view needs no edit for its colours, and only the
+  word "Style" changed to "Theme" for its styles. Avalonia applies a keyed
+  ControlTheme through the Theme property; Style by key does not exist.
+
+  The look is Fluent. The names stay Material only so the port stays small.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ==== Colours ==== -->
+    <!-- Blue primary and lime accent, the palette App.xaml asked for. -->
+    <Color x:Key="PrimaryHueLight">#FF64B5F6</Color>
+    <Color x:Key="PrimaryHueMid">#FF2196F3</Color>
+    <Color x:Key="PrimaryHueDark">#FF1976D2</Color>
+    <Color x:Key="SecondaryHueMid">#FFCDDC39</Color>
+
+    <SolidColorBrush x:Key="PrimaryHueLightBrush" Color="{StaticResource PrimaryHueLight}"/>
+    <SolidColorBrush x:Key="PrimaryHueMidBrush" Color="{StaticResource PrimaryHueMid}"/>
+    <SolidColorBrush x:Key="PrimaryHueDarkBrush" Color="{StaticResource PrimaryHueDark}"/>
+    <SolidColorBrush x:Key="PrimaryHueLightForegroundBrush" Color="#DD000000"/>
+    <SolidColorBrush x:Key="PrimaryHueMidForegroundBrush" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="PrimaryHueDarkForegroundBrush" Color="#FFFFFFFF"/>
+
+    <SolidColorBrush x:Key="SecondaryHueMidBrush" Color="{StaticResource SecondaryHueMid}"/>
+    <SolidColorBrush x:Key="SecondaryHueMidForegroundBrush" Color="#DD000000"/>
+    <SolidColorBrush x:Key="SecondaryAccentBrush" Color="{StaticResource SecondaryHueMid}"/>
+    <SolidColorBrush x:Key="SecondaryAccentForegroundBrush" Color="#DD000000"/>
+
+    <!-- ==== Surfaces ==== -->
+    <SolidColorBrush x:Key="MaterialDesignPaper" Color="#FF303030"/>
+    <SolidColorBrush x:Key="MaterialDesignCardBackground" Color="#FF424242"/>
+    <SolidColorBrush x:Key="MaterialDesignToolBarBackground" Color="#FF212121"/>
+    <SolidColorBrush x:Key="MaterialDesignBody" Color="#DDFFFFFF"/>
+    <SolidColorBrush x:Key="MaterialDesignBodyLight" Color="#89FFFFFF"/>
+    <SolidColorBrush x:Key="MaterialDesignDivider" Color="#1FFFFFFF"/>
+    <SolidColorBrush x:Key="MaterialDesignSelection" Color="#28FFFFFF"/>
+
+    <!-- ==== Text input ====
+         Material floats the hint above the box. Fluent has no floating hint, so
+         these keys all resolve to the plain Fluent TextBox. Set PlaceholderText
+         where the WPF view set materialDesign:HintAssist.Hint. -->
+    <ControlTheme x:Key="MaterialDesignFloatingHintTextBox" TargetType="TextBox"
+                  BasedOn="{StaticResource {x:Type TextBox}}"/>
+    <ControlTheme x:Key="MaterialDesignFilledTextBox" TargetType="TextBox"
+                  BasedOn="{StaticResource {x:Type TextBox}}"/>
+    <ControlTheme x:Key="MaterialDesignOutlinedTextBox" TargetType="TextBox"
+                  BasedOn="{StaticResource {x:Type TextBox}}"/>
+
+    <ControlTheme x:Key="MaterialDesignFloatingHintComboBox" TargetType="ComboBox"
+                  BasedOn="{StaticResource {x:Type ComboBox}}"/>
+    <ControlTheme x:Key="MaterialDesignOutlinedComboBox" TargetType="ComboBox"
+                  BasedOn="{StaticResource {x:Type ComboBox}}"/>
+
+    <!-- ==== Buttons ==== -->
+    <ControlTheme x:Key="MaterialDesignFlatButton" TargetType="Button"
+                  BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueLightBrush}"/>
+        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}"/>
+        </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="MaterialDesignRaisedButton" TargetType="Button"
+                  BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueMidForegroundBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="MaterialDesignRaisedLightButton" TargetType="Button"
+                  BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource PrimaryHueLightBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueLightForegroundBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="MaterialDesignRaisedDarkButton" TargetType="Button"
+                  BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource PrimaryHueDarkBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueDarkForegroundBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </ControlTheme>
+
+    <!-- The round action buttons. Material sizes them 56 and 40. -->
+    <ControlTheme x:Key="MaterialDesignFloatingActionButton" TargetType="Button"
+                  BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Width" Value="56"/>
+        <Setter Property="Height" Value="56"/>
+        <Setter Property="CornerRadius" Value="28"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Background" Value="{DynamicResource SecondaryAccentBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryAccentForegroundBrush}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="MaterialDesignFloatingActionMiniButton" TargetType="Button"
+                  BasedOn="{StaticResource MaterialDesignFloatingActionButton}">
+        <Setter Property="Width" Value="40"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="CornerRadius" Value="20"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="MaterialDesignFloatingActionMiniLightButton" TargetType="Button"
+                  BasedOn="{StaticResource MaterialDesignFloatingActionMiniButton}">
+        <Setter Property="Background" Value="{DynamicResource PrimaryHueLightBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueLightForegroundBrush}"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="MaterialDesignFloatingActionMiniDarkButton" TargetType="Button"
+                  BasedOn="{StaticResource MaterialDesignFloatingActionMiniButton}">
+        <Setter Property="Background" Value="{DynamicResource PrimaryHueDarkBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryHueDarkForegroundBrush}"/>
+    </ControlTheme>
+
+    <!-- App.xaml defined this one itself: a bare button that lights up on hover. -->
+    <ControlTheme x:Key="IconButton" TargetType="Button"
+                  BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="Padding" Value="2"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Style Selector="^:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource MaterialDesignSelection}"/>
+        </Style>
+    </ControlTheme>
+
+    <!-- ==== Toggles and sliders ==== -->
+    <ControlTheme x:Key="MaterialDesignSwitchToggleButton" TargetType="ToggleSwitch"
+                  BasedOn="{StaticResource {x:Type ToggleSwitch}}"/>
+    <ControlTheme x:Key="MaterialDesignSwitchAccentToggleButton" TargetType="ToggleSwitch"
+                  BasedOn="{StaticResource {x:Type ToggleSwitch}}"/>
+    <ControlTheme x:Key="MaterialDesignDiscreteSlider" TargetType="Slider"
+                  BasedOn="{StaticResource {x:Type Slider}}"/>
+
+    <!-- ==== Text ==== -->
+    <ControlTheme x:Key="MaterialDesignBody1TextBlock" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14"/>
+    </ControlTheme>
+
+    <ControlTheme x:Key="MaterialDesignBody2TextBlock" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13"/>
+    </ControlTheme>
+
+    <!-- App.xaml defined this one itself: dim the text when the control is off. -->
+    <ControlTheme x:Key="TogglableTextBlock" TargetType="TextBlock"
+                  BasedOn="{StaticResource MaterialDesignBody2TextBlock}">
+        <Style Selector="^:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+    </ControlTheme>
+
+</ResourceDictionary>

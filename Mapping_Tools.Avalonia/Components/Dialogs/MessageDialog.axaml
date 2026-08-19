@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="using:System"
+             xmlns:c="clr-namespace:Mapping_Tools.Components"
+             x:Class="Mapping_Tools.Components.Dialogs.MessageDialog">
+    <Grid Margin="16" RowDefinitions="Auto,Auto">
+        <TextBlock x:Name="MessageTextBlock" Grid.Row="0"
+                   MaxWidth="331" Margin="0,6,0,0"
+                   TextWrapping="Wrap" FontSize="18"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,16,0,0">
+            <Button IsDefault="True" Theme="{StaticResource MaterialDesignFlatButton}"
+                    Content="OK"
+                    Command="{x:Static c:DialogHost.CloseDialogCommand}">
+                <Button.CommandParameter>
+                    <sys:Boolean>True</sys:Boolean>
+                </Button.CommandParameter>
+            </Button>
+            <Button IsCancel="True" Margin="8,0,0,0" Theme="{StaticResource MaterialDesignFlatButton}"
+                    Content="I WANNA SPEAK TO YOUR MANAGER"
+                    Command="{x:Static c:DialogHost.CloseDialogCommand}">
+                <Button.CommandParameter>
+                    <sys:Boolean>False</sys:Boolean>
+                </Button.CommandParameter>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

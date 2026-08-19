@@ -7,8 +7,10 @@ Assessed version: 1.12.30 (`net10.0-windows`, WPF and WinForms)
 
 ## Status
 
-**The core split is done.** See "Current state" below. The rest of this document is the
-plan, and it still holds. Effort figures for finished items now say DONE.
+**The core split is done**, and so are the first two steps of the Avalonia port: the
+shell, and the shared parts that every view needs. See "Current state" below. The rest
+of this document is the plan, and it still holds. Effort figures for finished items now
+say DONE.
 
 ## How this assessment was made
 
@@ -64,8 +66,9 @@ dotnet run --project Mapping_Tools.Avalonia
 |---|---|---|
 | `Mapping_Tools.Core` | `net10.0` | 219 files, 47,977 lines. Portable. |
 | `Mapping_Tools` | `net10.0-windows` | 222 files, 26,265 lines. WPF and Windows only. |
-| `Mapping_Tools.Avalonia` | `net10.0` | The Linux host. Shell only, no tool views yet. |
+| `Mapping_Tools.Avalonia` | `net10.0` | The Linux host. Shell and shared parts, no tool views yet. |
 | `Mapping_Tools.Core.Tests` | `net10.0` | 13 files. Runs anywhere. |
+| `Mapping_Tools.Avalonia.Tests` | `net10.0` | Draws the controls with no screen. Runs on Linux. |
 | `Mapping_Tools_Tests` | `net10.0-windows` | 3 files. Snapping Tools and hotkeys. |
 
 **65% of the C# is now portable and proven to build on Linux.**
@@ -155,7 +158,8 @@ and it stays the most likely source of quiet faults.
 
 ### What is not done
 
-- The Avalonia user interface (3.1). The shell runs. No tool views are ported.
+- The Avalonia tool views (3.1). The shell and the shared parts run. No tool view is
+  ported yet, and the view models still sit in the WPF project.
 - EditorReader on Linux (3.2). The interface is there, and `NullEditorReaderService`
   reads the file on disk instead. No Linux reader exists.
 - Global hotkeys (3.3), image processing (3.4), the updater (3.6), the release job (3.7).
@@ -285,25 +289,39 @@ tools. No compiler will find this problem. Only a test with real beatmaps will f
 
 ## 3. Much work, or a complete overhaul
 
-### 3.1 The WPF user interface — 2 to 4 months (shell DONE)
+### 3.1 The WPF user interface — 2 to 4 months (shell and shared parts DONE)
 
 WPF has no Linux renderer, and it will never have one. The move is to Avalonia UI.
 
-**The shell exists.** `Mapping_Tools.Avalonia` builds and runs natively on Linux, with
-no WINE. It finds tools by reflection, lists them, and shows the one that is chosen.
-No tool views are ported yet.
+**The shell exists**, and so do the shared parts that every view needs.
+`Mapping_Tools.Avalonia` builds and runs natively on Linux, with no WINE. It finds
+tools by reflection, lists them, and shows the one that is chosen. No tool views are
+ported yet.
+
+#### The look: Fluent
+
+Fluent, the theme that comes with Avalonia. Material.Avalonia was dropped. The program
+no longer looks the way the WPF program looks, and that was accepted to cut the work.
+
+`Material.Icons.Avalonia` stays. It does not depend on Material.Avalonia, and it holds
+every icon the views use.
+
+To keep the views small to port, `Styles/MaterialCompat.axaml` maps the Material Design
+key names onto Fluent. All 13 brush keys and about 20 style keys are there, so a ported
+view keeps its `{DynamicResource PrimaryHueMidBrush}` lines untouched.
 
 #### Versions, checked on 2026-08-19
 
 | Package | Version | Note |
 |---|---|---|
 | Avalonia | 12.1.1 | not 11.x |
-| Material.Avalonia | 3.18.0 | |
-| Material.Icons.Avalonia / Material.Icons | 3.0.2 | |
-| Avalonia.Controls.DataGrid | 12.1.2 | |
-| DialogHost.Avalonia | 0.12.3 | needed for `DialogHost` |
+| Avalonia.Themes.Fluent | 12.1.1 | |
+| Material.Icons.Avalonia / Material.Icons | 3.0.2 | icons only, no theme |
+| Avalonia.Controls.DataGrid | 12.1.2 | `Themes/Fluent.xaml` |
+| Avalonia.Headless / Avalonia.Skia | 12.1.1 | the test project |
+| Material.Avalonia | 3.18.0 | **dropped**, Fluent is used |
+| DialogHost.Avalonia | 0.12.3 | **not used**, the port writes its own |
 | Avalonia.Diagnostics | 11.3.20 | **no 12.x**; left out |
-| Avalonia.Xaml.Behaviors | 11.3.0.6 | behind Avalonia 12; probably not needed |
 
 #### What makes this port easier than most
 
@@ -319,40 +337,69 @@ No tool views are ported yet.
 - `Properties/Settings.settings` and `App.config` have no user. Delete them.
 - Only 5 top level windows outside Snapping Tools.
 
+#### What step 2 built — DONE
+
+Everything below lives in `Mapping_Tools.Avalonia/Components/`, and every item has a
+test in `Mapping_Tools.Avalonia.Tests`.
+
+| Part | Answers |
+|---|---|
+| `Styles/MaterialCompat.axaml` | the 184 `DynamicResource` uses and the 300 or so keyed styles |
+| `Domain/*Converters.cs` | all 30 converters of `Mapping_Tools/Components/Domain` |
+| `Domain/Validation.cs` | the 8 WPF `ValidationRule` classes |
+| `ValidatedTextBox` | `Binding.ValidationRules`, which Avalonia does not have |
+| `PopupBox` | `materialDesign:PopupBox`, 33 uses |
+| `DialogHost` | `materialDesign:DialogHost`, and its two commands |
+| `ViewHeaderComponent` | the tool title and its description bubble |
+| `Dialogs/` | MessageDialog, TypeValueDialog, BeatmapImportDialog |
+
+#### Why validation needed a control, not a converter
+
+Avalonia has no `Binding.ValidationRules`. Three ways to report a bad value from a
+converter were measured against Avalonia 12.1.1, with a `TextBox.Text` bound two ways
+to a `double`:
+
+| From `ConvertBack` | Control marked | Source after |
+|---|---|---|
+| throw `DataValidationException` | no | **0** |
+| throw `ArgumentException` | no | **0** |
+| return a `BindingNotification` | yes, but the message is a cast error | kept |
+| return `BindingOperations.DoNothing` | no | kept |
+
+Throwing is the worst of the four: it says nothing and it wipes the source. So
+`ValidatedTextBox` owns the write instead. Bind its `Value`, not its `Text`.
+
 #### The work that is left
 
 | Item | Volume | Note |
 |---|---|---|
-| `materialDesign:HintAssist` | **155** | No equivalent. Use `TextBox.PlaceholderText`. **Not** `Watermark`: Avalonia 12 marks that obsolete. |
-| `materialDesign:PopupBox` | **66 + 66 attached** | **Nothing equivalent in Material.Avalonia.** Write a control, or move to `Flyout`. The largest single gap. |
-| `DynamicResource` | 184 in 38 files | Supported, but the MaterialDesign key names do not exist. Needs a key map. |
+| `materialDesign:HintAssist` | 155 | Use `TextBox.PlaceholderText`. **Not** `Watermark`: Avalonia 12 marks that obsolete. |
+| `Style="{StaticResource X}"` | about 300 | To `Theme="{StaticResource X}"`. Avalonia applies a keyed `ControlTheme`, and has no keyed `Style`. The keys themselves are kept. |
+| `Visibility=` | 82 in 23 files | To `IsVisible`, which is a boolean. |
 | `DependencyProperty.Register` | 82 in 15 files | To `StyledProperty`. Graph holds 36, HitObjectElement 11, Anchor 8. |
-| `Visibility=` | 82 in 23 files | To `IsVisible`. |
+| `Binding.ValidationRules` | 20 or so, in 11 files | To `ValidatedTextBox`. Bind `Value`, and drop the `DoubleWrapper` and `IntWrapper` holders: an Avalonia rule takes a plain number. |
 | `WindowChrome` | 5 files | To `ExtendClientAreaToDecorationsHint`. |
 | `OnRender` | GraphMarker, HitObjectElement | To `Render`, with a different drawing API. |
 | Custom animations | GraphDoubleAnimation, GraphIntegralDoubleAnimation | Extend `DoubleAnimationBase`. Avalonia animates in a completely different way. Full rewrite. |
 | `BitmapSource`, `InteropBitmap` | 20 + 4 | To Avalonia `Bitmap`. Joins the work in 3.4. |
 | `DataGridComboBoxColumn` | 4 | **Avalonia has no such column.** Use `DataGridTemplateColumn`. |
-| `DialogHost`, `DrawerHost`, `Snackbar` | 2, 2, 1 | Separate package, `NavigationDrawer`, `SnackbarHost`. All different. |
+| `DrawerHost`, `Snackbar` | 2, 1 | The main window already draws its own list panel and its own message bar. |
 
 Surface to port, without the deferred Snapping Tools: **5,303 lines of XAML and
 17,150 lines of C#**, plus the main window.
 
-#### The choice that sets the size of the job
-
-Keep the Material look, or accept the Fluent theme of Avalonia? Material.Avalonia keeps
-the appearance but lacks `PopupBox` and `HintAssist`, which is about 220 places between
-them. Fluent removes almost all theme work and both gaps, but the program stops looking
-the way it looks now. The shell uses Material today.
-
 #### Order of work
 
 1. **Shell. DONE.** App, main window, tool discovery, platform services.
-2. **Shared parts.** The converters in `Components/Domain`, `ViewHeaderComponent`, the
-   dialogs, and a replacement for `PopupBox`. Everything after this depends on them.
+2. **Shared parts. DONE.** Converters, validation, `PopupBox`, `DialogHost`,
+   `ViewHeaderComponent`, the dialogs, and the Material to Fluent key map.
 3. **Simple tools.** Map Cleaner, Metadata Manager, Property Transformer, Timing Helper,
-   Hitsound Copier. These prove the pattern.
-4. **Drawn tools last.** Graph, then Sliderator and Tumour Generator, which need it.
+   Hitsound Copier. These prove the pattern. The view models come with them: they sit in
+   the WPF project today, and a shared home must be picked before the first one moves.
+4. **The rest of the standard tools.** Timing Copier, Rhythm Guide, Mapset Merger,
+   Combo Colour Studio, Pattern Gallery.
+5. **Drawn tools last.** Graph, then Sliderator and Tumour Generator, which need it.
+6. **Slider Picturator.** Held by 3.4, not by Avalonia.
 
 Keep `AvaloniaUseCompiledBindingsByDefault` false. The XAML binds by reflection and has
 no `x:DataType`, so compiled bindings would add churn everywhere before anything runs.

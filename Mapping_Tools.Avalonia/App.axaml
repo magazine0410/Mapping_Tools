@@ -1,11 +1,22 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
              xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
              x:Class="Mapping_Tools.Avalonia.App"
              RequestedThemeVariant="Dark">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Keeps the Material Design key names alive over a Fluent look. -->
+                <ResourceInclude Source="avares://Mapping_Tools.Avalonia/Styles/MaterialCompat.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
-        <themes:MaterialTheme BaseTheme="Dark" PrimaryColor="Blue" SecondaryColor="LightBlue"/>
+        <FluentTheme/>
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
         <icons:MaterialIconStyles/>
+        <StyleInclude Source="avares://Mapping_Tools.Avalonia/Styles/Controls.axaml"/>
     </Application.Styles>
 </Application>
