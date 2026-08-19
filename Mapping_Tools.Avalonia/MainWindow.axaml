@@ -1,0 +1,85 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        xmlns:styles="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+        xmlns:dialogs="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+        x:Class="Mapping_Tools.Avalonia.MainWindow"
+        Title="Mapping Tools"
+        Width="1200" Height="800"
+        MinWidth="720" MinHeight="480"
+        WindowStartupLocation="CenterScreen">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Header -->
+        <styles:ColorZone Grid.Row="0" Mode="PrimaryMid" Height="48">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <ToggleButton Grid.Column="0" x:Name="NavToggle" Margin="8,0"
+                              IsChecked="True" VerticalAlignment="Center"
+                              ToolTip.Tip="Show or hide the tool list">
+                    <icons:MaterialIcon Kind="Menu" Width="24" Height="24"/>
+                </ToggleButton>
+
+                <Menu Grid.Column="1" VerticalAlignment="Center">
+                    <MenuItem Header="_File">
+                        <MenuItem Header="_Open beatmap" Click="OpenBeatmap">
+                            <MenuItem.Icon><icons:MaterialIcon Kind="Folder"/></MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="E_xit" Click="ExitApp"/>
+                    </MenuItem>
+                    <MenuItem Header="_About">
+                        <MenuItem Header="Open Mapping Tools _folder" Click="OpenConfigFolder">
+                            <MenuItem.Icon><icons:MaterialIcon Kind="FolderOpen"/></MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="Open _backups folder" Click="OpenBackupsFolder">
+                            <MenuItem.Icon><icons:MaterialIcon Kind="FolderOpen"/></MenuItem.Icon>
+                        </MenuItem>
+                        <Separator/>
+                        <MenuItem Header="_About" Click="OpenAbout">
+                            <MenuItem.Icon><icons:MaterialIcon Kind="InformationOutline"/></MenuItem.Icon>
+                        </MenuItem>
+                    </MenuItem>
+                </Menu>
+
+                <TextBlock Grid.Column="2" x:Name="CurrentToolText"
+                           VerticalAlignment="Center" HorizontalAlignment="Center"
+                           FontSize="16" Text="Mapping Tools"/>
+
+                <TextBlock Grid.Column="3" x:Name="VersionText" Margin="12,0"
+                           VerticalAlignment="Center" Opacity="0.7" FontSize="12"/>
+            </Grid>
+        </styles:ColorZone>
+
+        <!-- Body: tool list on the left, the tool itself on the right -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+            <Border Grid.Column="0" Width="260" Background="{DynamicResource MaterialCardBackgroundBrush}"
+                    IsVisible="{Binding #NavToggle.IsChecked}">
+                <DockPanel>
+                    <TextBox DockPanel.Dock="Top" x:Name="ToolFilter" Margin="8"
+                             PlaceholderText="Search tools" TextChanged="ToolFilterChanged"/>
+                    <ListBox x:Name="ToolList" SelectionChanged="ToolSelected"
+                             Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,4">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                                    <TextBlock Text="{Binding Summary}" Opacity="0.6"
+                                               FontSize="11" TextWrapping="Wrap" MaxWidth="220"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <ContentControl Grid.Column="1" x:Name="ToolHost" Margin="0"/>
+        </Grid>
+
+        <!-- Footer: notifications from the core -->
+        <Border Grid.Row="2" x:Name="SnackBorder" IsVisible="False"
+                Background="{DynamicResource MaterialCardBackgroundBrush}" Padding="16,10">
+            <TextBlock x:Name="SnackText"/>
+        </Border>
+    </Grid>
+</Window>

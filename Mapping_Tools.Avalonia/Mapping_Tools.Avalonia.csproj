@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Mapping_Tools.Avalonia</RootNamespace>
+    <AssemblyName>Mapping_Tools.Avalonia</AssemblyName>
+    <Nullable>disable</Nullable>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+    <!-- The existing XAML uses reflection bindings with no x:DataType. Turning on
+         compiled bindings before the views are ported would add churn everywhere. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.1.2" />
+    <PackageReference Include="Material.Avalonia" Version="3.18.0" />
+    <PackageReference Include="Material.Icons.Avalonia" Version="3.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mapping_Tools.Core\Mapping_Tools.Core.csproj" />
+  </ItemGroup>
+
+</Project>

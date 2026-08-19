@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Mapping_Tools.Avalonia.Platform.DialogWindow"
+        Title="Mapping Tools"
+        SizeToContent="WidthAndHeight"
+        MaxWidth="700"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <StackPanel Margin="24" Spacing="18">
+        <ScrollViewer MaxHeight="380" HorizontalScrollBarVisibility="Disabled">
+            <SelectableTextBlock x:Name="MessageText" TextWrapping="Wrap"/>
+        </ScrollViewer>
+        <StackPanel x:Name="ButtonPanel" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8"/>
+    </StackPanel>
+</Window>

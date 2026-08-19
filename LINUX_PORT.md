@@ -39,7 +39,7 @@ to fix. **Treat any "clean file" count from a failing build as a floor, not a to
 
 ## Current state
 
-Three build paths work. None needs WINE for the core.
+Four build paths work. The core and the Avalonia host need no WINE at all.
 
 ```bash
 dotnet build Mapping_Tools.Core/Mapping_Tools.Core.csproj
@@ -47,11 +47,15 @@ dotnet build Mapping_Tools.Core/Mapping_Tools.Core.csproj
 ```bash
 dotnet test Mapping_Tools.Core.Tests/Mapping_Tools.Core.Tests.csproj
 ```
+```bash
+dotnet run --project Mapping_Tools.Avalonia
+```
 
 | Path | Result |
 |---|---|
 | `Mapping_Tools.Core` on Linux, target `net10.0` | Builds. 0 errors. |
-| `Mapping_Tools.Core.Tests` on Linux | 25 tests, all pass. |
+| `Mapping_Tools.Core.Tests` on Linux | 29 tests, all pass. |
+| `Mapping_Tools.Avalonia` on Linux | Builds, and starts natively. No WINE. |
 | Full solution with `-p:EnableWindowsTargeting=true` | Builds. 0 errors. |
 
 ### The projects
@@ -60,7 +64,8 @@ dotnet test Mapping_Tools.Core.Tests/Mapping_Tools.Core.Tests.csproj
 |---|---|---|
 | `Mapping_Tools.Core` | `net10.0` | 219 files, 47,977 lines. Portable. |
 | `Mapping_Tools` | `net10.0-windows` | 222 files, 26,265 lines. WPF and Windows only. |
-| `Mapping_Tools.Core.Tests` | `net10.0` | 12 files. Runs anywhere. |
+| `Mapping_Tools.Avalonia` | `net10.0` | The Linux host. Shell only, no tool views yet. |
+| `Mapping_Tools.Core.Tests` | `net10.0` | 13 files. Runs anywhere. |
 | `Mapping_Tools_Tests` | `net10.0-windows` | 3 files. Snapping Tools and hotkeys. |
 
 **65% of the C# is now portable and proven to build on Linux.**
@@ -150,7 +155,7 @@ and it stays the most likely source of quiet faults.
 
 ### What is not done
 
-- The Avalonia user interface (3.1). Nothing started.
+- The Avalonia user interface (3.1). The shell runs. No tool views are ported.
 - EditorReader on Linux (3.2). The interface is there, and `NullEditorReaderService`
   reads the file on disk instead. No Linux reader exists.
 - Global hotkeys (3.3), image processing (3.4), the updater (3.6), the release job (3.7).
@@ -280,29 +285,77 @@ tools. No compiler will find this problem. Only a test with real beatmaps will f
 
 ## 3. Much work, or a complete overhaul
 
-### 3.1 The WPF user interface — 2 to 4 months
+### 3.1 The WPF user interface — 2 to 4 months (shell DONE)
 
-This is the largest cost of the whole project. WPF has no Linux renderer, and it will
-never have one. You must move to Avalonia UI. Avalonia is close to WPF, but it is not
-source-compatible.
+WPF has no Linux renderer, and it will never have one. The move is to Avalonia UI.
 
-| Item | Size |
-|---|---|
-| XAML to convert | 6,402 lines, 46 files |
-| View and view-model C# to adjust | 20,213 lines |
-| Custom-drawn control: `Components/Graph/` | 3,915 lines |
-| Custom-drawn controls: `TimeLine`, `ObjectVisualiser`, `GIFImageControl` | about 1,100 lines |
+**The shell exists.** `Mapping_Tools.Avalonia` builds and runs natively on Linux, with
+no WINE. It finds tools by reflection, lists them, and shows the one that is chosen.
+No tool views are ported yet.
 
-Additional interface problems:
+#### Versions, checked on 2026-08-19
 
-- **MaterialDesignInXamlToolkit** is used in 37 of the 46 XAML files.
-  `Material.Avalonia` exists, but it is not a drop-in replacement.
-- **Extended WPF Toolkit** is used for a colour picker at 2 places only. This is easy.
-- **VirtualizingWrapPanel** has an Avalonia equivalent.
-- **`WindowChrome`** builds a custom title bar in `MainWindow.xaml`. Avalonia does this
-  in a different way.
-- **`Properties/Settings.settings` and `App.config`** use the old .NET Framework
-  settings system. Both need a replacement.
+| Package | Version | Note |
+|---|---|---|
+| Avalonia | 12.1.1 | not 11.x |
+| Material.Avalonia | 3.18.0 | |
+| Material.Icons.Avalonia / Material.Icons | 3.0.2 | |
+| Avalonia.Controls.DataGrid | 12.1.2 | |
+| DialogHost.Avalonia | 0.12.3 | needed for `DialogHost` |
+| Avalonia.Diagnostics | 11.3.20 | **no 12.x**; left out |
+| Avalonia.Xaml.Behaviors | 11.3.0.6 | behind Avalonia 12; probably not needed |
+
+#### What makes this port easier than most
+
+- **Almost no triggers.** 2 occurrences in 1 file. No `DataTrigger`, `EventTrigger`,
+  `MultiTrigger` or `VisualStateManager`. Triggers are the usual reason a WPF port
+  fails, and this program has none of them.
+- **No WPF animations in XAML.** The 11 hits for "Storyboard" are the labels of
+  check boxes about osu! storyboards.
+- **All 54 icons map one to one.** Every `PackIconKind` value that the program uses
+  compiles against `MaterialIconKind`. The change is a rename in 146 XAML places and
+  25 C# places.
+- No adorners, no `OnApplyTemplate`, and one custom routed event.
+- `Properties/Settings.settings` and `App.config` have no user. Delete them.
+- Only 5 top level windows outside Snapping Tools.
+
+#### The work that is left
+
+| Item | Volume | Note |
+|---|---|---|
+| `materialDesign:HintAssist` | **155** | No equivalent. Use `TextBox.PlaceholderText`. **Not** `Watermark`: Avalonia 12 marks that obsolete. |
+| `materialDesign:PopupBox` | **66 + 66 attached** | **Nothing equivalent in Material.Avalonia.** Write a control, or move to `Flyout`. The largest single gap. |
+| `DynamicResource` | 184 in 38 files | Supported, but the MaterialDesign key names do not exist. Needs a key map. |
+| `DependencyProperty.Register` | 82 in 15 files | To `StyledProperty`. Graph holds 36, HitObjectElement 11, Anchor 8. |
+| `Visibility=` | 82 in 23 files | To `IsVisible`. |
+| `WindowChrome` | 5 files | To `ExtendClientAreaToDecorationsHint`. |
+| `OnRender` | GraphMarker, HitObjectElement | To `Render`, with a different drawing API. |
+| Custom animations | GraphDoubleAnimation, GraphIntegralDoubleAnimation | Extend `DoubleAnimationBase`. Avalonia animates in a completely different way. Full rewrite. |
+| `BitmapSource`, `InteropBitmap` | 20 + 4 | To Avalonia `Bitmap`. Joins the work in 3.4. |
+| `DataGridComboBoxColumn` | 4 | **Avalonia has no such column.** Use `DataGridTemplateColumn`. |
+| `DialogHost`, `DrawerHost`, `Snackbar` | 2, 2, 1 | Separate package, `NavigationDrawer`, `SnackbarHost`. All different. |
+
+Surface to port, without the deferred Snapping Tools: **5,303 lines of XAML and
+17,150 lines of C#**, plus the main window.
+
+#### The choice that sets the size of the job
+
+Keep the Material look, or accept the Fluent theme of Avalonia? Material.Avalonia keeps
+the appearance but lacks `PopupBox` and `HintAssist`, which is about 220 places between
+them. Fluent removes almost all theme work and both gaps, but the program stops looking
+the way it looks now. The shell uses Material today.
+
+#### Order of work
+
+1. **Shell. DONE.** App, main window, tool discovery, platform services.
+2. **Shared parts.** The converters in `Components/Domain`, `ViewHeaderComponent`, the
+   dialogs, and a replacement for `PopupBox`. Everything after this depends on them.
+3. **Simple tools.** Map Cleaner, Metadata Manager, Property Transformer, Timing Helper,
+   Hitsound Copier. These prove the pattern.
+4. **Drawn tools last.** Graph, then Sliderator and Tumour Generator, which need it.
+
+Keep `AvaloniaUseCompiledBindingsByDefault` false. The XAML binds by reflection and has
+no `x:DataType`, so compiled bindings would add churn everywhere before anything runs.
 
 ### 3.2 EditorReader — a full rewrite, or remove the function
 
